@@ -1,4 +1,3 @@
-const CitaServicioService = require('../services/CitaServicioService');
 const citaServicioService = require('../services/CitaServicioService');
 
 class CitaServicioController {

@@ -1,5 +1,5 @@
 
-const servicioService = require('../services/servicioService');
+const servicioService = require('../services/ServicioService');
 
 class ServicioController {
 

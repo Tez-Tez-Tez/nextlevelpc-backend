@@ -7,8 +7,14 @@ const { UsuarioCreateDTO, UsuarioUpdateDTO, LoginDTO } = require('../dto/Usuario
 
 class UsuariosService {
     static async crear(datos) {
+        console.log('UsuariosService.crear - datos recibidos:', datos);
+        
         const dto = new UsuarioCreateDTO(datos);
+        console.log('DTO creado:', dto);
+        
         const errores = dto.validate();
+        console.log('Errores de validación:', errores);
+        
         if (errores.length > 0) {
             throw new Error('Errores de validación: ' + errores.join(', '));
         }
@@ -18,7 +24,12 @@ class UsuariosService {
             throw new Error('Ya existe un usuario con ese correo');
         }
 
-        const id = await Usuarios.crear(dto.toModel());
+        const dataModelo = dto.toModel();
+        console.log('Data a insertar:', dataModelo);
+        
+        const id = await Usuarios.crear(dataModelo);
+        console.log('Usuario inserido con ID:', id);
+        
         return id;
     }
 

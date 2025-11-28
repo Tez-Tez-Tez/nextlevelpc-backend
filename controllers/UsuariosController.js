@@ -5,9 +5,18 @@ class UsuariosController {
     
     static async crear(req, res) {
         try {
+            console.log('=== INICIO REGISTRO ===');
+            console.log('Body recibido:', req.body);
+            
             const data = req.body;
+            console.log('Creando usuario con datos:', data);
+            
             const usuarioId = await UsuariosService.crear(data);
+            console.log('Usuario creado con ID:', usuarioId);
+            
             const usuario = await Usuarios.obtenerPorId(usuarioId);
+            console.log('Usuario recuperado:', usuario);
+            
             res.status(201).json({
                 success: true,
                 mensaje: 'Usuario registrado exitosamente',
@@ -15,7 +24,9 @@ class UsuariosController {
             });
 
         } catch (error) {
-            console.error('Error en registro:', error);
+            console.error('=== ERROR EN REGISTRO ===');
+            console.error('Error completo:', error);
+            console.error('Stack:', error.stack);
             res.status(500).json({
                 success: false,
                 mensaje: 'Error interno del servidor: ' + error.message

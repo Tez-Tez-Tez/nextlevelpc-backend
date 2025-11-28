@@ -4,15 +4,25 @@ const { supabaseAdmin } = require('../config/db.js');
 class Usuarios {
 
     static async crear(dto) {
+        console.log('Usuarios.crear - DTO recibido:', dto);
+        
         const { nombre, apellido, correo, hash_password, rol_id} = dto;
+        console.log('Valores extraídos:', { nombre, apellido, correo, rol_id });
+        
         const hashPassword = await bcrypt.hash(hash_password, 10);
+        console.log('Password hasheada');
 
         const { data, error } = await supabaseAdmin
             .from('usuarios')
             .insert([{ nombre, apellido, correo, hash_password: hashPassword, rol_id }])
             .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Error de Supabase:', error);
+            throw error;
+        }
+        
+        console.log('Usuario creado en BD:', data);
         return data[0].id;
     }
 

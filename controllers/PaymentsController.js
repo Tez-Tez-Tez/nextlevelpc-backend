@@ -1,8 +1,16 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeModule = require('stripe');
 const OrdenesService = require('../services/OrdenesService');
 const OrdenItemsService = require('../services/OrdenItemsService');
 const CitaServicioService = require('../services/CitaServicioService');
 const { OrdenCreateDTO } = require('../dto/OrdenesDTO');
+
+// Helper para obtener instancia de Stripe
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY no está configurada');
+  }
+  return stripeModule(process.env.STRIPE_SECRET_KEY);
+};
 
 class PaymentsController {
 
@@ -188,6 +196,7 @@ class PaymentsController {
 
       // Crear PaymentIntent en Stripe
       console.log('Creando PaymentIntent en Stripe...');
+      const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency,
@@ -223,6 +232,7 @@ class PaymentsController {
     let event;
 
     try {
+      const stripe = getStripe();
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,

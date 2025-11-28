@@ -19,8 +19,12 @@ class UsuariosService {
             throw new Error('Errores de validación: ' + errores.join(', '));
         }
         
+        console.log('Verificando si correo ya existe:', dto.correo);
         const usuarioExistente = await Usuarios.obtenerPorCorreo(dto.correo);
+        console.log('Resultado de búsqueda:', usuarioExistente);
+        
         if (usuarioExistente) {
+            console.error('Usuario ya existe con ese correo');
             throw new Error('Ya existe un usuario con ese correo');
         }
 

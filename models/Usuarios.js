@@ -63,6 +63,8 @@ class Usuarios {
     }
 
     static async obtenerPorCorreo(correo) {
+        console.log('Usuarios.obtenerPorCorreo - buscando correo:', correo);
+        
         const { data, error } = await supabaseAdmin
             .from('usuarios')
             .select(`
@@ -72,14 +74,24 @@ class Usuarios {
             .eq('correo', correo)
             .single();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        console.log('Respuesta Supabase - data:', data, '- error:', error);
         
-        if (!data) return null;
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error en obtenerPorCorreo:', error);
+            throw error;
+        }
         
-        return {
+        if (!data) {
+            console.log('No se encontró usuario con ese correo');
+            return null;
+        }
+        
+        const resultado = {
             ...data,
             rol_nombre: data.roles?.nombre
         };
+        console.log('Usuario encontrado:', resultado);
+        return resultado;
     }
 
     static async correoEnUso(correo, id) {

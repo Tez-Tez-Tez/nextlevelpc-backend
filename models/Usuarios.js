@@ -14,7 +14,14 @@ class Usuarios {
 
         const { data, error } = await supabaseAdmin
             .from('usuarios')
-            .insert([{ nombre, apellido, correo, hash_password: hashPassword, rol_id }])
+            .insert([{ 
+                nombre, 
+                apellido, 
+                correo, 
+                hash_password: hashPassword, 
+                rol_id,
+                estado: 'activo'
+            }])
             .select();
 
         if (error) {

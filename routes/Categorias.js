@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const categoriaController = require('../controllers/categoriaController');
+const categoriaController = require('../controllers/CategoriaController');
 const viewAuth = require('../middlewares/viewAuth');
 
 // GET /api/categorias - Obtener todas las categorías

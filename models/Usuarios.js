@@ -28,12 +28,21 @@ class Usuarios {
     static async obtenerPorId(id) {
         const { data, error } = await supabaseAdmin
             .from('usuarios')
-            .select('*')
+            .select(`
+                *,
+                roles(nombre)
+            `)
             .eq('id', id)
             .single();
 
         if (error && error.code !== 'PGRST116') throw error;
-        return data || null;
+        
+        if (!data) return null;
+        
+        return {
+            ...data,
+            rol_nombre: data.roles?.nombre
+        };
     }
 
     static async obtenerPorCorreo(correo) {

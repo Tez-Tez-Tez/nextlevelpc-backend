@@ -1,0 +1,568 @@
+<%
+    title = 'Orden #' + orden.numero_orden;
+    currentPage = 'ordenes';
+%>
+
+<main style="background-color: #f8f9fa; min-height: 100vh;">
+    <div class="container-fluid px-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+            <div>
+                <h1 class="h3 mb-1">
+                    <i class="fas fa-receipt me-2"></i>
+                    Orden #<%= orden.numero_orden %>
+                </h1>
+                <p class="text-muted mb-0">Detalles completos de la orden</p>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="/ordenes" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+                <a href="/ordenes/edit/<%= orden.id %>" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Orden
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <!-- Información de la Orden -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Información de la Orden
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="40%">Número de Orden:</th>
+                                        <td><strong class="text-primary">#<%= orden.numero_orden %></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Cliente:</th>
+                                        <td>
+                                            <strong><%= orden.cliente_nombre %> <%= orden.cliente_apellido %></strong><br>
+                                            <small class="text-muted"><%= orden.cliente_correo %></small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tipo:</th>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <%= orden.tipo === 'producto' ? 'Producto' : 'Servicio' %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="40%">Estado Orden:</th>
+                                        <td>
+                                            <% 
+                                            const estadoOrdenClass = {
+                                                'pendiente': 'bg-warning text-dark',
+                                                'procesando': 'bg-info text-white', 
+                                                'completada': 'bg-success text-white',
+                                                'cancelada': 'bg-danger text-white'
+                                            }[orden.estado_orden] || 'bg-secondary text-white'; 
+                                            %>
+                                            <span class="badge badge-estado <%= estadoOrdenClass %>">
+                                                <%= orden.estado_orden %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Estado Pago:</th>
+                                        <td>
+                                            <% 
+                                            const estadoPagoClass = {
+                                                'pendiente': 'bg-warning text-dark',
+                                                'pagado': 'bg-success text-white',
+                                                'fallido': 'bg-danger text-white'
+                                            }[orden.estado_pago] || 'bg-secondary text-white'; 
+                                            %>
+                                            <span class="badge badge-estado <%= estadoPagoClass %>">
+                                                <%= orden.estado_pago %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fecha Creación:</th>
+                                        <td><%= new Date(orden.created_at).toLocaleString('es-ES') %></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items de la Orden -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Items de la Orden
+                        </h5>
+                        <span class="badge bg-light text-dark fs-6">
+                            Total: $<%= parseFloat(orden.total || 0).toFixed(2) %>
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        <% if (items && items.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="50">#</th>
+                                            <th>Descripción</th>
+                                            <th width="100">Tipo</th>
+                                            <th width="100">Cantidad</th>
+                                            <th width="120">Precio Unit.</th>
+                                            <th width="120">Subtotal</th>
+                                            <th width="100" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% items.forEach((item, index) => { %>
+                                        <tr class="item-row">
+                                            <td class="text-muted"><%= index + 1 %></td>
+                                            <td>
+                                                <div class="fw-bold"><%= item.descripcion %></div>
+                                                <% if (item.producto_nombre) { %>
+                                                    <small class="text-muted">Producto: <%= item.producto_nombre %></small>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    <%= item.tipo %>
+                                                </span>
+                                            </td>
+                                            <td><%= item.cantidad %></td>
+                                            <td>$<%= parseFloat(item.precio_unitario).toFixed(2) %></td>
+                                            <td class="fw-bold text-success">$<%= parseFloat(item.subtotal).toFixed(2) %></td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-warning" 
+                                                            onclick="editarItem(<%= item.id %>)"
+                                                            title="Editar item">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" 
+                                                            onclick="eliminarItem(<%= item.id %>)"
+                                                            title="Eliminar item">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="5" class="text-end fw-bold">Total:</td>
+                                            <td class="fw-bold text-success fs-5">$<%= parseFloat(orden.total || 0).toFixed(2) %></td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No hay items en esta orden</h5>
+                                <p class="text-muted">Agrega items usando el formulario de abajo</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Formulario para Agregar Item -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Agregar Nuevo Item
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="addItemForm">
+                            <input type="hidden" name="orden_id" value="<%= orden.id %>">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Tipo</label>
+                                    <select class="form-select" name="tipo" id="itemTipo" required>
+                                        <option value="">Seleccionar tipo</option>
+                                        <option value="producto">Producto</option>
+                                        <option value="servicio">Servicio</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3" id="productoField" style="display: none;">
+                                    <label class="form-label">Producto</label>
+                                    <select class="form-select" name="producto_id" id="productoSelect">
+                                        <option value="">Seleccionar producto</option>
+                                        <% if (productos && productos.length > 0) { %>
+                                            <% productos.forEach(producto => { %>
+                                                <option value="<%= producto.id %>" data-precio="<%= producto.precio_actual %>">
+                                                    <%= producto.nombre %> - $<%= producto.precio_actual %>
+                                                </option>
+                                            <% }); %>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3" id="descripcionField">
+                                    <label class="form-label">Descripción</label>
+                                    <input type="text" class="form-control" name="descripcion" 
+                                           placeholder="Descripción del item" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" class="form-control" name="cantidad" 
+                                           value="1" min="1" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Precio Unitario</label>
+                                    <input type="number" class="form-control" name="precio_unitario" 
+                                           step="0.01" min="0" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-6 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-success w-100" id="addItemBtn">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Agregar Item
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar de Acciones -->
+            <div class="col-lg-4">
+                <!-- Resumen -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calculator me-2"></i>
+                            Resumen
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong>$<%= parseFloat(orden.total || 0).toFixed(2) %></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Impuestos (0%):</span>
+                            <strong>$0.00</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="fw-bold">Total:</span>
+                            <strong class="text-success fs-5">$<%= parseFloat(orden.total || 0).toFixed(2) %></strong>
+                        </div>
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            El total se actualiza automáticamente al agregar/eliminar items.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>
+                            Acciones Rápidas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <% if (orden.estado_pago !== 'pagado') { %>
+                                <button class="btn btn-success" onclick="marcarComoPagado()">
+                                    <i class="fas fa-check me-2"></i>
+                                    Marcar como Pagado
+                                </button>
+                            <% } %>
+                            
+                            <% if (orden.estado_orden === 'pendiente') { %>
+                                <button class="btn btn-info" onclick="marcarComoProcesando()">
+                                    <i class="fas fa-cog me-2"></i>
+                                    En Procesamiento
+                                </button>
+                            <% } %>
+                            
+                            <% if (orden.estado_orden === 'procesando') { %>
+                                <button class="btn btn-success" onclick="marcarComoCompletada()">
+                                    <i class="fas fa-flag me-2"></i>
+                                    Completar Orden
+                                </button>
+                            <% } %>
+                            
+                            <% if (orden.estado_orden !== 'cancelada') { %>
+                                <button class="btn btn-danger" onclick="cancelarOrden()">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar Orden
+                                </button>
+                            <% } %>
+                            
+                            <a href="/api/ordenes/<%= orden.id %>/pdf" class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                Descargar PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para Editar Item -->
+<div class="modal fade" id="editItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editItemForm">
+                    <input type="hidden" id="editItemId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" class="form-control" id="editDescripcion" name="descripcion" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="editCantidad" name="cantidad" min="1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Precio Unitario</label>
+                            <input type="number" class="form-control" id="editPrecio" name="precio_unitario" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCambiosItem()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Manejo del tipo de item
+    document.getElementById('itemTipo').addEventListener('change', function() {
+        const tipo = this.value;
+        const productoField = document.getElementById('productoField');
+        const descripcionField = document.getElementById('descripcionField');
+        const productoSelect = document.getElementById('productoSelect');
+        const precioInput = document.querySelector('input[name="precio_unitario"]');
+
+        if (tipo === 'producto') {
+            productoField.style.display = 'block';
+            descripcionField.className = 'col-md-4 mb-3';
+            
+            // Auto-seleccionar precio cuando se elige producto
+            productoSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const precio = selectedOption.getAttribute('data-precio');
+                if (precio) {
+                    precioInput.value = parseFloat(precio).toFixed(2);
+                }
+            });
+        } else {
+            productoField.style.display = 'none';
+            descripcionField.className = 'col-md-8 mb-3';
+            productoSelect.value = '';
+            precioInput.value = '';
+        }
+    });
+
+    // Agregar item
+    document.getElementById('addItemForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('addItemBtn');
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Agregando...';
+
+        try {
+            const response = await fetch('/api/orden-items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Recargar la página para ver los cambios
+                window.location.reload();
+            } else {
+                alert('Error: ' + result.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus me-2"></i>Agregar Item';
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus me-2"></i>Agregar Item';
+        }
+    });
+
+    // Editar item
+    async function editarItem(itemId) {
+        try {
+            const response = await fetch(`/api/orden-items/${itemId}`);
+            const result = await response.json();
+
+            if (result.success) {
+                const item = result.data;
+                document.getElementById('editItemId').value = item.id;
+                document.getElementById('editDescripcion').value = item.descripcion;
+                document.getElementById('editCantidad').value = item.cantidad;
+                document.getElementById('editPrecio').value = item.precio_unitario;
+                
+                new bootstrap.Modal(document.getElementById('editItemModal')).show();
+            } else {
+                alert('Error al cargar el item: ' + result.message);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // Guardar cambios del item
+    async function guardarCambiosItem() {
+        const itemId = document.getElementById('editItemId').value;
+        const formData = new FormData(document.getElementById('editItemForm'));
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch(`/api/orden-items/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Cerrar modal y recargar
+                bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
+                window.location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // Eliminar item
+    async function eliminarItem(itemId) {
+        if (!confirm('¿Estás seguro de eliminar este item?')) return;
+
+        try {
+            const response = await fetch(`/api/orden-items/${itemId}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // Acciones rápidas
+    async function marcarComoPagado() {
+        await actualizarOrden({ estado_pago: 'pagado' });
+    }
+
+    async function marcarComoProcesando() {
+        await actualizarOrden({ estado_orden: 'procesando' });
+    }
+
+    async function marcarComoCompletada() {
+        await actualizarOrden({ estado_orden: 'completada' });
+    }
+
+    async function cancelarOrden() {
+        if (!confirm('¿Estás seguro de cancelar esta orden?')) return;
+        await actualizarOrden({ estado_orden: 'cancelada' });
+    }
+
+    async function actualizarOrden(data) {
+        try {
+            const response = await fetch(`/api/ordenes/<%= orden.id %>`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // Auto-cerrar alertas
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>

@@ -1,0 +1,225 @@
+<%
+title = 'Crear Cita de Servicio';
+currentPage = 'dashboard';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-plus-circle me-2"></i>
+            Crear Nueva Cita
+        </h1>
+        <p class="text-muted mb-0">Agenda una cita para servicio técnico</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background: linear-gradient(90deg, #28a745 0%, #20c997 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información de la Cita
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/dashboard/crear" method="POST" id="citaForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="servicio_id" class="form-label required">
+                                <i class="fas fa-wrench me-1"></i>
+                                Servicio *
+                            </label>
+                            <select class="form-select" id="servicio_id" name="servicio_id" required>
+                                <option value="">Selecciona un servicio</option>
+                                <% if (servicios && servicios.length > 0) { %>
+                                    <% servicios.forEach(servicio => { %>
+                                        <option value="<%= servicio.id %>" data-precio="<%= servicio.precio %>">
+                                            <%= servicio.nombre %> - $<%= servicio.precio.toLocaleString('es-ES') %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_cita" class="form-label required">
+                                <i class="fas fa-calendar me-1"></i>
+                                Fecha y Hora *
+                            </label>
+                            <input type="datetime-local" class="form-control" id="fecha_cita" name="fecha_cita" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre_cliente" class="form-label required">
+                                <i class="fas fa-user me-1"></i>
+                                Nombre del Cliente *
+                            </label>
+                            <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="email_cliente" class="form-label required">
+                                <i class="fas fa-envelope me-1"></i>
+                                Correo Electrónico *
+                            </label>
+                            <input type="email" class="form-control" id="email_cliente" name="email_cliente" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono_cliente" class="form-label required">
+                                <i class="fas fa-phone me-1"></i>
+                                Teléfono *
+                            </label>
+                            <input type="text" class="form-control" id="telefono_cliente" name="telefono_cliente" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="direccion_cliente" class="form-label required">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Dirección *
+                            </label>
+                            <input type="text" class="form-control" id="direccion_cliente" name="direccion_cliente" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcion_problema" class="form-label">
+                            <i class="fas fa-sticky-note me-1"></i>
+                            Descripción del Problema (Opcional)
+                        </label>
+                        <textarea class="form-control" id="descripcion_problema" name="descripcion_problema" rows="3" 
+                                  placeholder="Describe brevemente el problema o requerimiento..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <button type="reset" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-undo me-2"></i>
+                            Limpiar
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Crear Cita
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información Importante -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Información Importante
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-exclamation-circle me-2"></i>Campos Requeridos</h6>
+                    <ul class="small mb-0">
+                        <li>Servicio</li>
+                        <li>Fecha y hora</li>
+                        <li>Nombre del cliente</li>
+                        <li>Correo y teléfono</li>
+                        <li>Dirección</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-tips me-2"></i>Recomendaciones</h6>
+                    <ul class="small mb-0">
+                        <li>Verifica la disponibilidad del técnico</li>
+                        <li>Confirma la fecha y hora con el cliente</li>
+                        <li>Registra todos los datos correctamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Previa -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Vista Previa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                    <h6 id="previewServicio" class="text-muted">Servicio seleccionado</h6>
+                    <p class="mb-1"><span id="previewFecha" class="text-muted">Fecha y hora</span></p>
+                    <p class="mb-0"><span id="previewCliente" class="text-muted">Cliente</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+// Scripts específicos para crear cita
+scripts = `
+    // Validación del formulario
+    document.getElementById('citaForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('citaForm');
+
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/dashboard"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+
+    // Vista previa en tiempo real
+    document.getElementById('servicio_id').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        document.getElementById('previewServicio').textContent = selected.text || 'Servicio seleccionado';
+    });
+
+    document.getElementById('fecha_cita').addEventListener('change', function() {
+        document.getElementById('previewFecha').textContent = this.value ? new Date(this.value).toLocaleString('es-ES') : 'Fecha y hora';
+    });
+
+    document.getElementById('nombre_cliente').addEventListener('input', function() {
+        document.getElementById('previewCliente').textContent = this.value || 'Cliente';
+    });
+`
+%>

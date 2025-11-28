@@ -1,0 +1,184 @@
+<%
+    title = 'crear orden';
+    currentPage = 'ordenes';
+%>
+
+<main style="background-color: #f8f9fa; min-height: 100vh;">
+    <div class="container-fluid px-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+            <div>
+                <h1 class="h3 mb-1">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Crear Nueva Orden
+                </h1>
+                <p class="text-muted mb-0">Registra una nueva orden en el sistema</p>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="/ordenes" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Información de la Orden
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/ordenes/crear" method="POST" id="ordenForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="cliente_id" class="form-label required">
+                                        <i class="fas fa-user me-1"></i>
+                                        Cliente
+                                    </label>
+                                    <select class="form-select" id="cliente_id" name="cliente_id" required>
+                                        <option value="">Selecciona un cliente</option>
+                                        <% if (clientes && clientes.length > 0) { %>
+                                            <% clientes.forEach(cliente => { %>
+                                                <option value="<%= cliente.id %>">
+                                                    <%= cliente.nombre %> <%= cliente.apellido %> - <%= cliente.correo %>
+                                                </option>
+                                            <% }); %>
+                                        <% } %>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="tipo" class="form-label required">
+                                        <i class="fas fa-tag me-1"></i>
+                                        Tipo de Orden
+                                    </label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="producto">Orden de Productos</option>
+                                        <option value="servicio">Orden de Servicios</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-sticky-note me-1"></i>
+                                    Notas Adicionales (Opcional)
+                                </label>
+                                <textarea class="form-control" name="notas" rows="3" 
+                                          placeholder="Agregar notas o comentarios sobre la orden..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                                <button type="reset" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-undo me-2"></i>
+                                    Limpiar
+                                </button>
+                                <button type="submit" class="btn btn-success" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>
+                                    Crear Orden
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Información Importante -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Información Importante
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-exclamation-circle me-2"></i>Campos Requeridos</h6>
+                            <ul class="small mb-0">
+                                <li>Cliente</li>
+                                <li>Tipo de orden</li>
+                            </ul>
+                        </div>
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-tips me-2"></i>Recomendaciones</h6>
+                            <ul class="small mb-0">
+                                <li>Selecciona el cliente correcto</li>
+                                <li>Elige el tipo de orden apropiado</li>
+                                <li>Puedes agregar items después de crear la orden</li>
+                                <li>La orden se crea con estado "pendiente"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vista Previa -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-eye me-2"></i>
+                            Proceso Siguiente
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <i class="fas fa-shopping-cart fa-3x text-primary mb-3"></i>
+                            <h6>Paso 1: Crear Orden</h6>
+                            <p class="small text-muted">
+                                Después de crear la orden, podrás agregar los items (productos o servicios) en la página de detalles.
+                            </p>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: 25%">25%</div>
+                            </div>
+                            <small class="text-muted">Siguiente: Agregar items a la orden</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Validación del formulario
+    document.getElementById('ordenForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('ordenForm');
+    
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/ordenes"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+</script>

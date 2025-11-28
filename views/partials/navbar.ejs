@@ -1,0 +1,105 @@
+<nav class="col-md-3 col-lg-2 d-md-block sidebar collapse"
+    style="background: linear-gradient(180deg, #2c3e50 0%, #1a2530 100%); min-height: 100vh;">
+    <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+            <h4 class="text-white">
+                <i class="fas fa-desktop me-2"></i>
+                NextLevelPC
+            </h4>
+            <p class="text-light small">Panel de Administración</p>
+        </div>
+
+        <ul class="nav flex-column mb-4">
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex align-items-center <%= currentPage === 'dashboard' ? 'active-nav' : '' %>"
+                    href="/dashboard">
+                    <i class="fas fa-home me-3"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex align-items-center <%= currentPage === 'productos' ? 'active-nav' : '' %>"
+                    href="/productos">
+                    <i class="fas fa-box me-3"></i>
+                    Productos
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex align-items-center <%= currentPage === 'ordenes' ? 'active-nav' : '' %>"
+                    href="/ordenes">
+                    <i class="fas fa-shopping-cart me-3"></i>
+                    Órdenes
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white d-flex align-items-center <%= currentPage === 'users' ? 'active-nav' : '' %>"
+                    href="/usuarios">
+                    <i class="fas fa-users me-3"></i>
+                    Usuarios
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <button class="nav-link text-white d-flex align-items-center btn btn-link w-100 text-start"
+                    onclick="backendLogout()" style="text-decoration: none;">
+                    <i class="fas fa-sign-out-alt me-3"></i>
+                    Cerrar sesión
+                </button>
+            </li>
+        </ul>
+
+        <div class="mt-4 px-3">
+            <div class="card bg-dark border-light">
+                <div class="card-body text-center">
+                    <small class="text-light">Sistema de Gestión</small>
+                    <br>
+                    <small class="text-muted">v1.0.0</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    async function backendLogout() {
+        try {
+            // Llamar al logout del backend para cerrar la sesión del panel (cookies/token servidor)
+            await fetch('http://localhost:8080/api/usuarios/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (e) {
+            console.error('Error al cerrar sesión desde vistas:', e);
+        } finally {
+            // Intentar limpiar también el token del SPA, por si comparten origen
+            try {
+                localStorage.removeItem('accessToken');
+            } catch (err) {
+                console.warn('No se pudo limpiar accessToken de localStorage:', err);
+            }
+
+            // Redirigir directamente al home público del SPA (sin login)
+            // IMPORTANTE: usa exactamente el mismo origen/puerto con el que abres el frontend
+            window.location.href = 'http://localhost:5173/home';
+        }
+    }
+</script>
+
+<style>
+    .active-nav {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+
+    .sidebar .nav-link {
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+</style>

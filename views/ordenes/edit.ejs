@@ -1,0 +1,235 @@
+<%
+    title = 'Editar orden';
+    currentPage = 'ordenes';
+%>
+
+<main style="background-color: #f8f9fa; min-height: 100vh;">
+    <div class="container-fluid px-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+            <div>
+                <h1 class="h3 mb-1">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Orden
+                </h1>
+                <p class="text-muted mb-0">Actualiza la información de la orden #<%= orden.numero_orden %></p>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="/ordenes/<%= orden.id %>" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-eye me-2"></i>
+                    Ver Detalles
+                </a>
+                <a href="/ordenes" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Editando Orden #<%= orden.numero_orden %>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/ordenes/update/<%= orden.id %>" method="POST" id="editForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="cliente_id" class="form-label">
+                                        <i class="fas fa-user me-1"></i>
+                                        Cliente
+                                    </label>
+                                    <select class="form-select" id="cliente_id" name="cliente_id">
+                                        <option value="">Selecciona un cliente</option>
+                                        <% if (clientes && clientes.length > 0) { %>
+                                            <% clientes.forEach(cliente => { %>
+                                                <option value="<%= cliente.id %>" 
+                                                        <%= orden.cliente_id == cliente.id ? 'selected' : '' %>>
+                                                    <%= cliente.nombre %> <%= cliente.apellido %> - <%= cliente.correo %>
+                                                </option>
+                                            <% }); %>
+                                        <% } %>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="tipo" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>
+                                        Tipo de Orden
+                                    </label>
+                                    <select class="form-select" id="tipo" name="tipo">
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="producto" <%= orden.tipo === 'producto' ? 'selected' : '' %>>Orden de Productos</option>
+                                        <option value="servicio" <%= orden.tipo === 'servicio' ? 'selected' : '' %>>Orden de Servicios</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="estado_orden" class="form-label">
+                                        <i class="fas fa-flag me-1"></i>
+                                        Estado de la Orden
+                                    </label>
+                                    <select class="form-select" id="estado_orden" name="estado_orden">
+                                        <option value="pendiente" <%= orden.estado_orden === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                        <option value="procesando" <%= orden.estado_orden === 'procesando' ? 'selected' : '' %>>En Procesamiento</option>
+                                        <option value="completada" <%= orden.estado_orden === 'completada' ? 'selected' : '' %>>Completada</option>
+                                        <option value="cancelada" <%= orden.estado_orden === 'cancelada' ? 'selected' : '' %>>Cancelada</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="estado_pago" class="form-label">
+                                        <i class="fas fa-credit-card me-1"></i>
+                                        Estado de Pago
+                                    </label>
+                                    <select class="form-select" id="estado_pago" name="estado_pago">
+                                        <option value="pendiente" <%= orden.estado_pago === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                        <option value="pagado" <%= orden.estado_pago === 'pagado' ? 'selected' : '' %>>Pagado</option>
+                                        <option value="fallido" <%= orden.estado_pago === 'fallido' ? 'selected' : '' %>>Fallido</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="total" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>
+                                    Total de la Orden
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="total" name="total" 
+                                           value="<%= orden.total %>" step="0.01" min="0">
+                                </div>
+                                <div class="form-text">Actualiza manualmente el total si es necesario</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-sticky-note me-1"></i>
+                                    Notas Adicionales
+                                </label>
+                                <textarea class="form-control" name="notas" rows="3" 
+                                          placeholder="Notas o comentarios sobre la orden..."><%= orden.notas || '' %></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                                <a href="/ordenes/<%= orden.id %>" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-warning" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>
+                                    Actualizar Orden
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Información de la Orden -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Información de la Orden
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Número de Orden:</strong>
+                            <br>
+                            <span class="badge bg-dark fs-6">#<%= orden.numero_orden %></span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Cliente Actual:</strong>
+                            <br>
+                            <span class="fw-bold"><%= orden.cliente_nombre %> <%= orden.cliente_apellido %></span>
+                            <br>
+                            <small class="text-muted"><%= orden.cliente_correo %></small>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Fecha de Creación:</strong>
+                            <br>
+                            <small class="text-muted"><%= new Date(orden.created_at).toLocaleString('es-ES') %></small>
+                        </div>
+                        <div class="alert alert-warning small">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tip:</strong> Los cambios se aplicarán inmediatamente al guardar.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Zona de Peligro
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-3">
+                            Estas acciones son permanentes y no se pueden deshacer.
+                        </p>
+                        <form action="/ordenes/delete/<%= orden.id %>" 
+                              method="POST" 
+                              onsubmit="return confirm('¿ESTÁS SEGURO de eliminar la orden #<%= orden.numero_orden %>? Esta acción eliminará TODOS los items asociados y no se puede deshacer.')">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-trash me-2"></i>
+                                Eliminar Orden
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Validación del formulario
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('editForm');
+    const initialData = new FormData(form);
+
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/ordenes/' + '<%= orden.id %>' + '"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+</script>

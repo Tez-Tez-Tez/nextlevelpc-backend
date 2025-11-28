@@ -1,0 +1,212 @@
+<%
+title = 'Gestión de Usuarios';
+currentPage = 'usuarios';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-users me-2"></i>
+            Gestión de Usuarios
+        </h1>
+        <p class="text-muted mb-0">Administra los usuarios del sistema</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/usuarios/create" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Nuevo Usuario
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas de Usuarios (BASE DE DATOS REAL) -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold"><%= usuarios.length %></div>
+                        <div>Total Usuarios</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= usuarios.filter(u => u.estado === 'activo').length %>
+                        </div>
+                        <div>Usuarios Activos</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-danger text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= usuarios.filter(u => u.estado === 'inactivo').length %>
+                        </div>
+                        <div>Usuarios Inactivos</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= usuarios.filter(u => u.rol_id === 1).length %>
+                        </div>
+                        <div>Administradores</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-shield fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof message !== 'undefined' && message) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <%= message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<!-- Tabla de Usuarios -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Lista de Usuarios
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <% if (usuarios && usuarios.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="usuariosTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th width="120">Rol</th>
+                            <th width="120">Estado</th>
+                            <th width="150" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% usuarios.forEach(usuario => { %>
+                            <tr>
+                                <td><span class="badge bg-dark">#<%= usuario.id %></span></td>
+                                <td>
+                                    <div class="fw-bold"><%= usuario.nombre %> <%= usuario.apellido %></div>
+                                    <small class="text-muted"><%= usuario.telefono %></small>
+                                </td>
+                                <td><%= usuario.correo %></td>
+                                <td>
+                                    <% const rolMap = { 1: 'admin', 2: 'cliente', 3: 'empleado' }; %>
+                                    <% const rolClass = {
+                                        1: 'bg-danger',
+                                        2: 'bg-primary',
+                                        3: 'bg-secondary'
+                                    }[usuario.rol_id] || 'bg-secondary'; %>
+                                    <span class="badge <%= rolClass %> text-white">
+                                        <%= rolMap[usuario.rol_id] || 'desconocido' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% if (usuario.estado === 'activo') { %>
+                                        <span class="badge bg-success">Activo</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    <% } %>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/usuarios/edit/<%= usuario.id %>" 
+                                        class="btn btn-outline-primary btn-icon-sq" 
+                                        title="Editar usuario"
+                                        data-bs-toggle="tooltip">
+                                        <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="/usuarios/delete/<%= usuario.id %>" 
+                                    method="POST" 
+                                    class="d-inline"
+                                    onsubmit="return confirm('¿Estás seguro de eliminar el usuario \'<%= usuario.nombre %>\'?')">
+                                    <button type="submit" 
+                                    class="btn btn-outline-danger btn-icon-sq" 
+                                    title="Eliminar usuario"
+                                    data-bs-toggle="tooltip">
+                
+                                    <i class="fas fa-trash"></i> 
+                
+                                    </button>
+                                    </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay usuarios registrados</h4>
+                <p class="text-muted mb-4">Comienza agregando el primer usuario</p>
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">
+                    <i class="fas fa-plus me-2"></i>
+                    Crear Primer Usuario
+                </button>
+            </div>
+        <% } %>
+    </div>
+    <% if (usuarios && usuarios.length > 0) { %>
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Mostrando <strong><%= usuarios.length %></strong> usuarios
+                </small>
+                <small class="text-muted">
+                    Actualizado: <%= new Date().toLocaleString('es-ES') %>
+                </small>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Fin del contenido específico -->

@@ -1,0 +1,347 @@
+<%
+    title = 'Crear Producto';
+    currentPage = 'productos';
+%>
+
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-plus-circle me-2"></i>
+            Crear Nuevo Producto
+        </h1>
+        <p class="text-muted mb-0">Agrega un nuevo producto al inventario</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/productos" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Formulario -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background: linear-gradient(90deg, #28a745 0%, #20c997 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información del Producto
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/productos/crear" method="POST" enctype="multipart/form-data" id="productForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="fas fa-tag me-1"></i>
+                                Nombre del Producto *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   required
+                                   maxlength="200"
+                                   placeholder="Ej: Laptop Gaming ASUS ROG">
+                            <div class="form-text">Máximo 200 caracteres</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="categoria_id" class="form-label">
+                                <i class="fas fa-folder me-1"></i>
+                                Categoría *
+                            </label>
+                            <select class="form-select" 
+                                    id="categoria_id" 
+                                    name="categoria_id" 
+                                    required>
+                                <option value="">Selecciona una categoría</option>
+                                <% if (categorias && categorias.length > 0) { %>
+                                    <% categorias.forEach(categoria => { %>
+                                        <option value="<%= categoria.id %>">
+                                            <%= categoria.nombre %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="precio_actual" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Precio Actual *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="precio_actual" 
+                                       name="precio_actual" 
+                                       step="0.01" 
+                                       min="0" 
+                                       required
+                                       placeholder="0.00">
+                            </div>
+                            <div class="form-text">Precio en dólares</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="stock" class="form-label">
+                                <i class="fas fa-cubes me-1"></i>
+                                Stock Inicial
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="stock" 
+                                   name="stock" 
+                                   min="0" 
+                                   value="0"
+                                   placeholder="0">
+                            <div class="form-text">Cantidad disponible en inventario</div>
+                        </div>
+                    </div>
+
+                    <!-- Imágenes del Producto -->
+                    <div class="mb-4">
+                        <label for="imagenes" class="form-label">
+                            <i class="fas fa-images me-1"></i>
+                            Imágenes del Producto
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="imagenes" 
+                               name="imagenes" 
+                               multiple 
+                               accept="image/*"
+                               onchange="previewImages(this)">
+                        <div class="form-text">
+                            Puedes seleccionar múltiples imágenes. La primera será la principal.
+                            Formatos permitidos: JPG, PNG, GIF. Máximo 5 imágenes.
+                        </div>
+                        <div id="imagePreview" class="mt-2 d-flex flex-wrap"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="activo" class="form-label">
+                            <i class="fas fa-toggle-on me-1"></i>
+                            Estado del Producto
+                        </label>
+                        <select class="form-select" id="activo" name="activo">
+                            <option value="1" selected>Activo - Disponible para venta</option>
+                            <option value="0">Inactivo - No disponible</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <button type="reset" class="btn btn-outline-secondary me-md-2" onclick="clearImagePreviews()"> 
+                            <i class="fas fa-undo me-2"></i>
+                                Limpiar Formulario
+                            </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Crear Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información Importante -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Información Importante
+                </h5>
+            </div>
+<div class="p-3 border border-info rounded mb-3 bg-light">
+    <h6><i class="fas fa-exclamation-circle me-2 text-info"></i>Campos Requeridos</h6>
+    <ul class="small mb-0">
+        <li>Nombre del producto</li>
+        <li>Categoría</li>
+        <li>Precio actual</li>
+    </ul>
+</div>
+<div class="p-3 border border-warning rounded mb-0 bg-light">
+    <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Recomendaciones</h6>
+    <ul class="small mb-0">
+        <li>Usa nombres descriptivos y claros</li>
+        </ul>
+</div>
+        </div>
+
+        <!-- Vista Previa -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Vista Previa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+
+<div id="mainImageContainer" class="image-placeholder bg-light rounded mb-3" 
+     style="width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+    
+    <img id="mainImagePreview" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+    
+    <i id="mainIconPlaceholder" class="fas fa-image text-muted fa-2x"></i>
+    
+</div>
+                    <h6 id="previewNombre" class="text-muted">Nombre del producto</h6>
+                    <p class="mb-1"><strong id="previewPrecio" class="text-success">$0.00</strong></p>
+                    <p class="mb-0"><span id="previewStock" class="badge bg-secondary">Stock: 0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+    // Scripts específicos para create
+    scripts = `
+        let fileList = new DataTransfer(); 
+
+        function updateFileInput() {
+            const fileInput = document.getElementById('imagenes');
+            fileInput.files = fileList.files;
+            previewImages(); // Llamar sin argumento, usa fileList global
+        }
+
+        // Función principal de vista previa (solo dibuja)
+        function previewImages() {
+            const previewContainer = document.getElementById('imagePreview');
+            const mainImg = document.getElementById('mainImagePreview');
+            const mainIcon = document.getElementById('mainIconPlaceholder');
+            const currentFiles = fileList.files;
+
+            previewContainer.innerHTML = ''; 
+            
+            if (currentFiles.length === 0) {
+                mainImg.src = '';
+                mainImg.style.display = 'none';
+                mainIcon.style.display = 'block';
+                return; 
+            }
+
+            Array.from(currentFiles).forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const fileURL = e.target.result;
+
+                        // 1. Crear el contenedor de la miniatura con botón de eliminar
+                        const container = document.createElement('div');
+                        container.className = 'preview-image-container position-relative me-2 mb-2';
+                        container.style = 'width: 100px; height: 100px;';
+                        
+                        const img = document.createElement('img');
+                        img.src = fileURL;
+                        img.className = 'preview-image rounded';
+                        img.style = 'width: 100%; height: 100%; object-fit: cover; border: 2px solid #dee2e6;';
+                        img.title = 'Imagen ' + (index + 1) + (index === 0 ? ' (Principal)' : '');
+
+                        // 2. Crear el botón de eliminar
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.className = 'btn btn-danger btn-sm p-0 border-0 rounded-circle position-absolute top-0 end-0 translate-middle shadow';
+                        deleteBtn.style = 'width: 20px; height: 20px; font-size: 10px; line-height: 1;';
+                        deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        
+                        deleteBtn.addEventListener('click', function() {
+                            deleteImage(index);
+                        });
+                        
+                        container.appendChild(img);
+                        container.appendChild(deleteBtn);
+                        previewContainer.appendChild(container);
+
+                        // 3. Cargar la PRIMERA imagen en la vista previa principal
+                        if (index === 0) {
+                            mainImg.src = fileURL;
+                            mainImg.style.display = 'block';
+                            mainIcon.style.display = 'none';
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Función para eliminar una imagen por índice
+        function deleteImage(index) {
+            if (fileList.files.length > index) {
+                fileList.items.remove(index);
+                updateFileInput(); 
+            }
+        }
+
+        // Función para limpiar todas las vistas previas
+        function clearImagePreviews() {
+            setTimeout(() => {
+                const fileInput = document.getElementById('imagenes');
+                fileInput.value = ''; 
+                fileList = new DataTransfer(); 
+                
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('mainImagePreview').src = '';
+                document.getElementById('mainImagePreview').style.display = 'none';
+                document.getElementById('mainIconPlaceholder').style.display = 'block';
+                
+                document.getElementById('previewNombre').textContent = 'Nombre del producto';
+                document.getElementById('previewPrecio').textContent = '$0.00';
+                document.getElementById('previewStock').textContent = 'Stock: 0';
+            }, 50); 
+        }
+
+
+        // MANEJO DE ARCHIVOS Y ALERTA DE LÍMITE
+        document.getElementById('imagenes').addEventListener('change', function() {
+            const newFiles = Array.from(this.files);
+            
+            fileList = new DataTransfer(); // Reiniciar la lista para nuevos archivos
+
+            // ALERTA DE LÍMITE DE IMÁGENES
+            if (newFiles.length > 5) {
+                alert('Has seleccionado ' + newFiles.length + ' imágenes. Solo se aceptarán las primeras 5.');
+            }
+            
+            // Llenar fileList con un máximo de 5 archivos
+            newFiles.slice(0, 5).forEach(file => {
+                fileList.items.add(file);
+            });
+            
+            // Actualizar el input y la vista previa
+            updateFileInput(); 
+        });
+
+        // Validación del formulario
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin me-2\"></i>Creando...';
+        });
+
+        // Vista previa en tiempo real de otros campos
+        document.getElementById('nombre').addEventListener('input', function() {
+            document.getElementById('previewNombre').textContent = this.value || 'Nombre del producto';
+        });
+
+        document.getElementById('precio_actual').addEventListener('input', function() {
+            const precio = this.value ? parseFloat(this.value).toFixed(2) : '0.00';
+            document.getElementById('previewPrecio').textContent = '$' + precio;
+        });
+
+        document.getElementById('stock').addEventListener('input', function() {
+            document.getElementById('previewStock').textContent = 'Stock: ' + (this.value || '0');
+        });
+    `
+%>

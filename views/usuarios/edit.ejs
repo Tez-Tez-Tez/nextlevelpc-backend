@@ -1,0 +1,205 @@
+<%
+title = 'Editar Usuario';
+currentPage = 'usuarios';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-edit me-2"></i>
+            Editar Usuario
+        </h1>
+        <p class="text-muted mb-0">Actualiza la información de <%= usuario.nombre %> <%= usuario.apellido %></p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/usuarios" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-dark" style="background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Editando: <%= usuario.nombre %> <%= usuario.apellido %>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/usuarios/update/<%= usuario.id %>" method="POST" id="editForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" value="<%= usuario.nombre %>" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="apellido" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" name="apellido" value="<%= usuario.apellido %>">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="correo" class="form-label">Correo Electrónico *</label>
+                            <input type="email" class="form-control" id="correo" name="correo" value="<%= usuario.correo %>" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono" name="telefono" value="<%= usuario.telefono %>">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="rol" class="form-label">Rol *</label>
+                            <select class="form-select" id="rol" name="rol" required>
+                                <option value="cliente" <%= usuario.rol === 'cliente' ? 'selected' : '' %>>Cliente</option>
+                                <option value="empleado" <%= usuario.rol === 'empleado' ? 'selected' : '' %>>Empleado</option>
+                                <option value="admin" <%= usuario.rol === 'admin' ? 'selected' : '' %>>Administrador</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="1" <%= usuario.estado === 'activo' ? 'selected' : '' %>>Activo</option>
+                                <option value="0" <%= usuario.estado === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="/usuarios" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Actualizar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información del Usuario -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información del Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>ID del Usuario:</strong>
+                    <br>
+                    <span class="badge bg-dark fs-6">#<%= usuario.id %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Estado Actual:</strong>
+                    <br>
+                    <% if (usuario.estado === 'activo') { %>
+                        <span class="badge bg-success">Activo</span>
+                    <% } else { %>
+                        <span class="badge bg-danger">Inactivo</span>
+                    <% } %>
+                </div>
+                <div class="mb-3">
+                    <strong>Correo Actual:</strong>
+                    <br>
+                    <span class="text-muted"><%= usuario.correo %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Rol Actual:</strong>
+                    <br>
+                    <% const rolMap = { 1: 'admin', 2: 'cliente', 3: 'empleado' }; %>
+                    <% const rolClass = {
+                        1: 'bg-danger',
+                        2: 'bg-primary',
+                        3: 'bg-secondary'
+                    }[usuario.rol_id] || 'bg-secondary'; %>
+                    <span class="badge <%= rolClass %> text-white">
+                        <%= rolMap[usuario.rol_id] || 'desconocido' %>
+                    </span>
+                </div>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Los cambios se aplicarán inmediatamente al guardar.
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Zona de Peligro
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Estas acciones son permanentes y no se pueden deshacer.
+                </p>
+                <form action="/usuarios/delete/<%= usuario.id %>" 
+                      method="POST" 
+                      onsubmit="return confirm('¿ESTÁS SEGURO de eliminar el usuario <%= usuario.nombre %> <%= usuario.apellido %>? Esta acción no se puede deshacer.')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="fas fa-trash me-2"></i>
+                        Eliminar Usuario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+// Scripts específicos para editar usuario
+scripts = `
+    // Validación del formulario
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('editForm');
+
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/usuarios"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+`
+%>

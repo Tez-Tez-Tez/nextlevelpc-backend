@@ -1,0 +1,222 @@
+<%
+title = 'Gestión de Citas de Servicio';
+currentPage = 'dashboard';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-calendar-check me-2"></i>
+            Gestión de Citas de Servicio
+        </h1>
+        <p class="text-muted mb-0">Administra las citas agendadas para servicios técnicos</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/dashboard/create" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i>
+            Nueva Cita
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas de Citas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold"><%= citas.length %></div>
+                        <div>Total Citas</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= citas.filter(c => c.estado === 'confirmada').length %>
+                        </div>
+                        <div>Citas Confirmadas</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-warning text-dark mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= citas.filter(c => c.estado === 'pendiente').length %>
+                        </div>
+                        <div>Citas Pendientes</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-4 fw-bold">
+                            <%= citas.filter(c => c.estado_pago === 'pagado').length %>
+                        </div>
+                        <div>Citas Pagadas</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof message !== 'undefined' && message) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <%= message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<!-- Tabla de Citas -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Lista de Citas
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <% if (citas && citas.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="citasTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th width="140">Fecha y Hora</th>
+                            <th width="120">Estado</th>
+                            <th width="120">Pago</th>
+                            <th width="150" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% citas.forEach(cita => { %>
+                            <tr>
+                                <td><span class="badge bg-dark">#<%= cita.id %></span></td>
+                                <td>
+                                    <div class="fw-bold"><%= cita.nombre_cliente %></div>
+                                    <small class="text-muted"><%= cita.email_cliente %></small>
+                                </td>
+                                <td><%= cita.servicio_nombre %></td>
+                                <td>
+                                    <small class="text-muted">
+                                        <%= new Date(cita.fecha_cita).toLocaleString('es-ES') %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <% const estadoClass = {
+                                        'pendiente': 'bg-warning text-dark',
+                                        'confirmada': 'bg-success',
+                                        'cancelada': 'bg-danger',
+                                        'completada': 'bg-secondary'
+                                    }[cita.estado] || 'bg-secondary'; %>
+                                    <span class="badge <%= estadoClass %>">
+                                        <%= cita.estado %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% const pagoClass = {
+                                        'pendiente': 'bg-warning text-dark',
+                                        'pagado': 'bg-success',
+                                        'cancelado': 'bg-danger'
+                                    }[cita.estado_pago] || 'bg-secondary'; %>
+                                    <span class="badge <%= pagoClass %>">
+                                        <%= cita.estado_pago %>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                   <div class="btn-group btn-group-sm">
+                                        <a href="/dashboard/edit/<%= cita.id %>" 
+                                        class="btn btn-outline-primary btn-icon-sq" 
+                                        title="Editar cita"
+                                        data-bs-toggle="tooltip">
+                                        <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="/dashboard/delete/<%= cita.id %>" 
+                                    method="POST" 
+                                    class="d-inline"
+                                    onsubmit="return confirm('¿Estás seguro de eliminar la cita de \'<%= cita.nombre_cliente %>\'?')">
+                                    <button type="submit" 
+                                    class="btn btn-outline-danger btn-icon-sq" 
+                                    title="Eliminar cita"
+                                    data-bs-toggle="tooltip">
+                
+                                    <i class="fas fa-trash"></i> 
+                
+                                    </button>
+                                    </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay citas registradas</h4>
+                <p class="text-muted mb-4">Comienza agendando tu primera cita</p>
+                <a href="/dashboard/create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    Crear Primera Cita
+                </a>
+            </div>
+        <% } %>
+    </div>
+    <% if (citas && citas.length > 0) { %>
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Mostrando <strong><%= citas.length %></strong> citas
+                </small>
+                <small class="text-muted">
+                    Actualizado: <%= new Date().toLocaleString('es-ES') %>
+                </small>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Fin del contenido específico -->

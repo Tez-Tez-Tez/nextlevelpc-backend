@@ -1,0 +1,244 @@
+<%
+    title = 'Editar Producto';
+    currentPage = 'productos';
+%>
+
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-edit me-2"></i>
+            Editar Producto
+        </h1>
+        <p class="text-muted mb-0">Actualiza la información del producto</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/productos" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Formulario de edición -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-dark" style="background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Editando: <%= producto.nombre %>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/productos/edit/<%= producto.id %>" method="POST" id="editForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="fas fa-tag me-1"></i>
+                                Nombre del Producto *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   value="<%= producto.nombre %>"
+                                   required
+                                   maxlength="200">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="categoria_id" class="form-label">
+                                <i class="fas fa-folder me-1"></i>
+                                Categoría *
+                            </label>
+                            <select class="form-select" 
+                                    id="categoria_id" 
+                                    name="categoria_id" 
+                                    required>
+                                <option value="">Selecciona una categoría</option>
+                                <% if (categorias && categorias.length > 0) { %>
+                                    <% categorias.forEach(categoria => { %>
+                                        <option value="<%= categoria.id %>" 
+                                                <%= producto.categoria_id == categoria.id ? 'selected' : '' %>>
+                                            <%= categoria.nombre %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="precio_actual" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Precio Actual *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="precio_actual" 
+                                       name="precio_actual" 
+                                       value="<%= producto.precio_actual %>"
+                                       step="0.01" 
+                                       min="0" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="stock" class="form-label">
+                                <i class="fas fa-cubes me-1"></i>
+                                Stock
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="stock" 
+                                   name="stock" 
+                                   value="<%= producto.stock %>"
+                                   min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="activo" class="form-label">
+                            <i class="fas fa-toggle-on me-1"></i>
+                            Estado del Producto
+                        </label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="1" <%= producto.estado ? 'selected' : '' %>>Activo - Disponible para venta</option>
+                            <option value="0" <%= !producto.estado ? 'selected' : '' %>>Inactivo - No disponible</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="/productos" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Actualizar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información del Producto -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información del Producto
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>ID del Producto:</strong>
+                    <br>
+                    <span class="badge bg-dark fs-6">#<%= producto.id %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Estado Actual:</strong>
+                    <br>
+                    <% if (producto.estado) { %>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check me-1"></i>
+                            Activo
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times me-1"></i>
+                            Inactivo
+                        </span>
+                    <% } %>
+                </div>
+                <div class="mb-3">
+                    <strong>Precio Actual:</strong>
+                    <br>
+                    <span class="text-success fw-bold">$<%= parseFloat(producto.precio_actual).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Stock Actual:</strong>
+                    <br>
+                    <span class="badge bg-primary"><%= producto.stock %> unidades</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Última Actualización:</strong>
+                    <br>
+                    <small class="text-muted"><%= new Date().toLocaleString('es-ES') %></small>
+                </div>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Los cambios se aplicarán inmediatamente al guardar.
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Zona de Peligro
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Estas acciones son permanentes y no se pueden deshacer.
+                </p>
+                <form action="/productos/delete/<%= producto.id %>" 
+                      method="POST" 
+                      onsubmit="return confirmDelete('¿ESTÁS SEGURO de eliminar el producto \\'<%= producto.nombre %>\\'? Esta acción no se puede deshacer.')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="fas fa-trash me-2"></i>
+                        Eliminar Producto
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+    // Scripts específicos para edit
+    scripts = `
+        // Validación del formulario
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...';
+        });
+
+        // Confirmación antes de salir si hay cambios
+        let formChanged = false;
+        const form = document.getElementById('editForm');
+        const initialData = new FormData(form);
+
+        form.addEventListener('input', function() {
+            formChanged = true;
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+            }
+        });
+
+        // Los enlaces de cancelar deben resetear el flag
+        document.querySelector('a[href="/productos"]').addEventListener('click', function() {
+            formChanged = false;
+        });
+
+        // Función de confirmación mejorada
+        function confirmDelete(message) {
+            return confirm(message || '¿Estás seguro de eliminar este elemento?');
+        }
+    `
+%>

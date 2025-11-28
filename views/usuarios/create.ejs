@@ -1,0 +1,213 @@
+<%
+title = 'Crear Usuario';
+currentPage = 'usuarios';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-plus-circle me-2"></i>
+            Crear Nuevo Usuario
+        </h1>
+        <p class="text-muted mb-0">Registra un nuevo usuario en el sistema</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/usuarios" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background: linear-gradient(90deg, #28a745 0%, #20c997 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información del Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/usuarios/crear" method="POST" id="usuarioForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label required">
+                                <i class="fas fa-user me-1"></i>
+                                Nombre *
+                            </label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required maxlength="100">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="apellido" class="form-label">
+                                <i class="fas fa-user me-1"></i>
+                                Apellido
+                            </label>
+                            <input type="text" class="form-control" id="apellido" name="apellido" maxlength="100">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="correo" class="form-label required">
+                                <i class="fas fa-envelope me-1"></i>
+                                Correo Electrónico *
+                            </label>
+                            <input type="email" class="form-control" id="correo" name="correo" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">
+                                <i class="fas fa-phone me-1"></i>
+                                Teléfono
+                            </label>
+                            <input type="text" class="form-control" id="telefono" name="telefono">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="contrasena" class="form-label required">
+                                <i class="fas fa-lock me-1"></i>
+                                Contraseña *
+                            </label>
+                            <input type="password" class="form-control" id="contrasena" name="contrasena" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="rol" class="form-label required">
+                                <i class="fas fa-user-tag me-1"></i>
+                                Rol *
+                            </label>
+                            <select class="form-select" id="rol" name="rol" required>
+                                <option value="">Selecciona un rol</option>
+                                <option value="cliente">Cliente</option>
+                                <option value="empleado">Empleado</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <button type="reset" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-undo me-2"></i>
+                            Limpiar
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Crear Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información Importante -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Información Importante
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-exclamation-circle me-2"></i>Campos Requeridos</h6>
+                    <ul class="small mb-0">
+                        <li>Nombre</li>
+                        <li>Correo electrónico</li>
+                        <li>Contraseña</li>
+                        <li>Rol</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-tips me-2"></i>Recomendaciones</h6>
+                    <ul class="small mb-0">
+                        <li>Usa un correo válido y único</li>
+                        <li>Asigna el rol correcto desde el inicio</li>
+                        <li>La contraseña debe ser segura</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Previa -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Vista Previa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+                    <h6 id="previewNombre" class="text-muted">Nombre del usuario</h6>
+                    <p class="mb-1"><span id="previewCorreo" class="text-muted">correo@ejemplo.com</span></p>
+                    <p class="mb-0"><span id="previewRol" class="badge bg-secondary">cliente</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+// Scripts específicos para crear usuario
+scripts = `
+    // Validación del formulario
+    document.getElementById('usuarioForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('usuarioForm');
+
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/usuarios"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+
+    // Vista previa en tiempo real
+    document.getElementById('nombre').addEventListener('input', function() {
+        document.getElementById('previewNombre').textContent = this.value || 'Nombre del usuario';
+    });
+
+    document.getElementById('correo').addEventListener('input', function() {
+        document.getElementById('previewCorreo').textContent = this.value || 'correo@ejemplo.com';
+    });
+
+    document.getElementById('rol').addEventListener('change', function() {
+        const rolText = this.options[this.selectedIndex].text;
+        const previewRol = document.getElementById('previewRol');
+        previewRol.textContent = rolText;
+        previewRol.className = 'badge ' + (this.value === 'admin' ? 'bg-danger' : this.value === 'empleado' ? 'bg-secondary' : 'bg-primary');
+    });
+`
+%>

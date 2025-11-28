@@ -1,0 +1,227 @@
+<%
+title = 'Editar Cita de Servicio';
+currentPage = 'dashboard';
+%>
+
+<!-- Contenido específico de la vista -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4 border-bottom">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="fas fa-edit me-2"></i>
+            Editar Cita
+        </h1>
+        <p class="text-muted mb-0">Actualiza la información de la cita #<%= cita.id %></p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver
+        </a>
+    </div>
+</div>
+
+<!-- Alertas -->
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header text-dark" style="background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Editando Cita #<%= cita.id %>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/dashboard/update/<%= cita.id %>" method="POST" id="editForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="servicio_id" class="form-label">Servicio *</label>
+                            <select class="form-select" id="servicio_id" name="servicio_id" required>
+                                <% servicios.forEach(servicio => { %>
+                                    <option value="<%= servicio.id %>" 
+                                            <%= cita.servicio_id == servicio.id ? 'selected' : '' %>
+                                            data-precio="<%= servicio.precio %>">
+                                        <%= servicio.nombre %> - $<%= servicio.precio.toLocaleString('es-ES') %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_cita" class="form-label">Fecha y Hora *</label>
+                            <input type="datetime-local" class="form-control" id="fecha_cita" name="fecha_cita"
+                                   value="<%= new Date(cita.fecha_cita).toISOString().slice(0, 16) %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre_cliente" class="form-label">Nombre del Cliente *</label>
+                            <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente"
+                                   value="<%= cita.nombre_cliente %>" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="email_cliente" class="form-label">Correo Electrónico *</label>
+                            <input type="email" class="form-control" id="email_cliente" name="email_cliente"
+                                   value="<%= cita.email_cliente %>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono_cliente" class="form-label">Teléfono *</label>
+                            <input type="text" class="form-control" id="telefono_cliente" name="telefono_cliente"
+                                   value="<%= cita.telefono_cliente %>" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="direccion_cliente" class="form-label">Dirección *</label>
+                            <input type="text" class="form-control" id="direccion_cliente" name="direccion_cliente"
+                                   value="<%= cita.direccion_cliente %>" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcion_problema" class="form-label">Descripción del Problema</label>
+                        <textarea class="form-control" id="descripcion_problema" name="descripcion_problema" rows="3"><%= cita.descripcion_problema || '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="pendiente" <%= cita.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                <option value="confirmada" <%= cita.estado === 'confirmada' ? 'selected' : '' %>>Confirmada</option>
+                                <option value="cancelada" <%= cita.estado === 'cancelada' ? 'selected' : '' %>>Cancelada</option>
+                                <option value="completada" <%= cita.estado === 'completada' ? 'selected' : '' %>>Completada</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="estado_pago" class="form-label">Estado de Pago</label>
+                            <select class="form-select" id="estado_pago" name="estado_pago">
+                                <option value="pendiente" <%= cita.estado_pago === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                <option value="pagado" <%= cita.estado_pago === 'pagado' ? 'selected' : '' %>>Pagado</option>
+                                <option value="cancelado" <%= cita.estado_pago === 'cancelado' ? 'selected' : '' %>>Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="/dashboard" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Actualizar Cita
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Información de la Cita -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información de la Cita
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>ID de la Cita:</strong>
+                    <br>
+                    <span class="badge bg-dark fs-6">#<%= cita.id %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Cliente:</strong>
+                    <br>
+                    <span class="fw-bold"><%= cita.nombre_cliente %></span>
+                    <br>
+                    <small class="text-muted"><%= cita.email_cliente %></small>
+                </div>
+                <div class="mb-3">
+                    <strong>Servicio:</strong>
+                    <br>
+                    <span class="badge bg-primary"><%= cita.servicio_nombre %></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Fecha y Hora:</strong>
+                    <br>
+                    <small class="text-muted"><%= new Date(cita.fecha_cita).toLocaleString('es-ES') %></small>
+                </div>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Los cambios se aplicarán inmediatamente al guardar.
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Zona de Peligro
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Estas acciones son permanentes y no se pueden deshacer.
+                </p>
+                <form action="/dashboard/delete/<%= cita.id %>" 
+                      method="POST" 
+                      onsubmit="return confirm('¿ESTÁS SEGURO de cancelar la cita #<%= cita.id %>? Esta acción no se puede deshacer.')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="fas fa-trash me-2"></i>
+                        Cancelar Cita
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%
+// Scripts específicos para editar cita
+scripts = `
+    // Validación del formulario
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...';
+    });
+
+    // Confirmación antes de salir si hay cambios
+    let formChanged = false;
+    const form = document.getElementById('editForm');
+
+    form.addEventListener('input', function() {
+        formChanged = true;
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+        }
+    });
+
+    // Los enlaces de cancelar deben resetear el flag
+    document.querySelector('a[href="/dashboard"]').addEventListener('click', function() {
+        formChanged = false;
+    });
+`
+%>

@@ -203,22 +203,39 @@ class PaymentsController {
       // Crear PaymentIntent en Stripe
       console.log('Creando PaymentIntent en Stripe...');
       const stripe = getStripe();
-      const paymentIntent = await stripe.paymentIntents.create({
+      console.log('Instancia Stripe creada exitosamente');
+      console.log('Parámetros del PaymentIntent:', {
         amount: amountInCents,
         currency,
-        metadata: safeMetadata,
-        automatic_payment_methods: { enabled: true },
+        metadataKeys: Object.keys(safeMetadata)
       });
+      
+      try {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amountInCents,
+          currency,
+          metadata: safeMetadata,
+          automatic_payment_methods: { enabled: true },
+        });
 
-      console.log('PaymentIntent creado:', paymentIntent.id);
+        console.log('PaymentIntent creado:', paymentIntent.id);
 
-      return res.status(200).json({
-        success: true,
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-        ordenId: ordenId,
-        numeroOrden: ordenCreada.numero_orden
-      });
+        return res.status(200).json({
+          success: true,
+          clientSecret: paymentIntent.client_secret,
+          paymentIntentId: paymentIntent.id,
+          ordenId: ordenId,
+          numeroOrden: ordenCreada.numero_orden
+        });
+      } catch (stripeError) {
+        console.error('=== ERROR DE STRIPE ===');
+        console.error('Tipo de error:', stripeError.type);
+        console.error('Mensaje:', stripeError.message);
+        console.error('Status:', stripeError.statusCode);
+        console.error('Raw:', stripeError.raw);
+        console.error('========================');
+        throw stripeError;
+      }
 
     } catch (error) {
       console.error('Error creating payment intent:', error);

@@ -8,6 +8,17 @@ require('dotenv').config();
 
 const app = express();
 
+// DEBUG: Verificar variables de entorno Stripe
+console.log('\n=== VERIFICACIÓN DE VARIABLES DE ENTORNO ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('STRIPE_SECRET_KEY existe:', !!process.env.STRIPE_SECRET_KEY);
+console.log('STRIPE_PUBLIC_KEY existe:', !!process.env.STRIPE_PUBLIC_KEY);
+console.log('STRIPE_WEBHOOK_SECRET existe:', !!process.env.STRIPE_WEBHOOK_SECRET);
+if (process.env.STRIPE_SECRET_KEY) {
+  console.log('STRIPE_SECRET_KEY (primeros 30 chars):', process.env.STRIPE_SECRET_KEY.substring(0, 30));
+}
+console.log('===========================================\n');
+
 // Importar rutas
 const categoriasRoutes = require('./routes/Categorias');
 const serviciosRoutes = require('./routes/servicios');

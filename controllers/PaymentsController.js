@@ -6,8 +6,14 @@ const { OrdenCreateDTO } = require('../dto/OrdenesDTO');
 
 // Helper para obtener instancia de Stripe
 const getStripe = () => {
+  console.log('=== getStripe DEBUG ===');
+  console.log('STRIPE_SECRET_KEY existe:', !!process.env.STRIPE_SECRET_KEY);
+  console.log('STRIPE_SECRET_KEY primera parte:', process.env.STRIPE_SECRET_KEY?.substring(0, 20) || 'UNDEFINED');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('======================');
+  
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY no está configurada');
+    throw new Error('STRIPE_SECRET_KEY no está configurada en environment');
   }
   return stripeModule(process.env.STRIPE_SECRET_KEY);
 };

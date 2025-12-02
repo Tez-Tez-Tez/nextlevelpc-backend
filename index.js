@@ -39,12 +39,38 @@ const usersViews = require('./routesViews/usersViews');
 
 const { testConnection } = require('./config/db');
 
-//WEBHOOK PRIMERO - ANTES DE express.json()
+// WEBHOOK PRIMERO - ANTES DE express.json()
 app.use('/api/payments/webhook',
     express.raw({ type: 'application/json' })
 );
 
-// Middlewares
+// ============================================
+// LOS 3 HEADERS DE SEGURIDAD QUE NECESITAS
+// ============================================
+app.use((req, res, next) => {
+    // 1. X-Frame-Options (previene clickjacking)
+    res.setHeader('X-Frame-Options', 'DENY');
+    
+    // 2. X-Content-Type-Options (previene MIME sniffing)
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // 3. Content-Security-Policy (CSP - política de seguridad)
+    res.setHeader('Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self'; " +
+        "connect-src 'self'; " +
+        "frame-src 'none'; " +
+        "object-src 'none'"
+    );
+    
+    next();
+});
+// ============================================
+
+// Middlewares restantes
 app.use(cors({
     origin: [
         'http://localhost:5173', 
@@ -178,6 +204,10 @@ const startServer = async () => {
             console.log(`Health: http://localhost:${PORT}/api/health`);
             console.log(`Vista Productos: http://localhost:${PORT}/productos`);
             console.log(`Vista Órdenes: http://localhost:${PORT}/ordenes`);
+            console.log('\nHeaders de seguridad activados:');
+            console.log('- X-Frame-Options: DENY');
+            console.log('- X-Content-Type-Options: nosniff');
+            console.log('- Content-Security-Policy: Configurado');
         });
 
     } catch (error) {

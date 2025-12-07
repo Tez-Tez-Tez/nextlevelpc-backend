@@ -1,6 +1,7 @@
 const Categoria = require('../models/Categoria');
-const { db } = require('../config/db');
-const {CreateCategoriaDto,UpdateCategoriaDto} = require('../dto/CategoriasDto')
+const Productos = require('../models/Productos');
+const Servicio = require('../models/Servicio');
+const { CreateCategoriaDto, UpdateCategoriaDto } = require('../dto/CategoriasDto')
 
 class CategoriaService {
     static async getAllCategorias() {
@@ -11,15 +12,15 @@ class CategoriaService {
         }
     }
 
-   static async getCategoriasProductos() {
-    try {
-        return await Categoria.findAllProductos();
-    } catch (error) {
-        throw new Error(error.message);
+    static async getCategoriasProductos() {
+        try {
+            return await Categoria.findAllProductos();
+        } catch (error) {
+            throw new Error(error.message);
+        }
     }
-}
 
-  static  async getCategoriaById(id) {
+    static async getCategoriaById(id) {
         try {
             const categoria = await Categoria.findById(id);
             if (!categoria) {
@@ -31,7 +32,7 @@ class CategoriaService {
         }
     }
 
-  static  async createCategoria(categoriaData) {
+    static async createCategoria(categoriaData) {
         try {
             const categoria = new CreateCategoriaDto(categoriaData);
             const errors = categoria.validate();
@@ -51,7 +52,7 @@ class CategoriaService {
         }
     }
 
-  static  async updateCategoria(id, categoriaData) {
+    static async updateCategoria(id, categoriaData) {
         try {
             const categoria = await Categoria.findById(id);
             if (!categoria) {
@@ -60,45 +61,39 @@ class CategoriaService {
 
             const data = new UpdateCategoriaDto(categoriaData);
             const errores = data.validate();
-            if(errores.length > 0){
-                throw new Error('Errores de validación: ',errores.join(', '))
+            if (errores.length > 0) {
+                throw new Error('Errores de validación: ', errores.join(', '))
             }
 
             const patch = data.toPatchObject();
-            if(Object.keys(patch).length === 0){
+            if (Object.keys(patch).length === 0) {
                 throw new Error('No se enviaron campos para actualizar')
             }
 
-            if (patch.nombre &&patch.nombre !== categoria.nombre) {
+            if (patch.nombre && patch.nombre !== categoria.nombre) {
                 const exists = await Categoria.exists(patch.nombre, id);
                 if (exists) {
                     throw new Error('Ya existe una categoría con este nombre');
                 }
             }
 
-            return await Categoria.update(id,patch);
+            return await Categoria.update(id, patch);
         } catch (error) {
             throw new Error('Error al actualizar categoría: ' + error.message);
         }
     }
 
-  static  async deleteCategoria(id) {
+    static async deleteCategoria(id) {
         try {
             const categoria = await Categoria.findById(id);
             if (!categoria) {
                 throw new Error('Categoría no encontrada');
             }
 
-            const [productos] = await db.execute(
-                'SELECT COUNT(*) as count FROM productos WHERE categoria_id = ?',
-                [id]
-            );
-            const [servicios] = await db.execute(
-                'SELECT COUNT(*) as count FROM servicios WHERE categoria_id = ?',
-                [id]
-            );
+            const productosCount = await Productos.contarPorCategoria(id);
+            const serviciosCount = await Servicio.contarPorCategoria(id);
 
-            if (productos[0].count > 0 || servicios[0].count > 0) {
+            if (productosCount > 0 || serviciosCount > 0) {
                 throw new Error('No se puede eliminar la categoría porque tiene productos o servicios asociados');
             }
 
@@ -113,16 +108,16 @@ class CategoriaService {
         }
     }
 
-    static async getForName(){
-       try{ 
-        const categorias = await Categoria.getForName();
-        if(!categorias || categorias.length===0){
-            throw new Error('No hay categorias aún')
+    static async getForName() {
+        try {
+            const categorias = await Categoria.getForName();
+            if (!categorias || categorias.length === 0) {
+                throw new Error('No hay categorias aún')
+            }
+            return categorias;
+        } catch (error) {
+            throw new Error('Error al obtener categorias: ', error.message)
         }
-        return categorias;
-    }catch(error){
-       throw new Error('Error al obtener categorias: ',error.message)
-    }
     }
 
 }

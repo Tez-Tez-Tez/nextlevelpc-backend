@@ -4,13 +4,11 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
+const { globalLimiter, authLimiter, createLimiter } = require('./config/limiter');
 require('dotenv').config();
 
 const app = express();
 
-// =======================
-// 1. HELMET - Seguridad HTTP Headers
-// =======================
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -35,9 +33,8 @@ app.use(
   })
 );
 
-// =======================
-// 2. CORS - Configuración ÚNICA y correcta
-// =======================
+app.use(globalLimiter);
+
 
 // Normaliza los orígenes (quita barra final para evitar duplicados)
 const normalizeOrigin = (origin) => origin?.replace(/\/+$/, '');
@@ -68,14 +65,9 @@ const corsOptions = {
 // Aplica CORS una sola vez
 app.use(cors(corsOptions));
 
-// =======================
-// 3. WEBHOOK DE STRIPE (debe ir ANTES de express.json())
-// =======================
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
-// =======================
-// 4. Middlewares generales
-// =======================
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -97,9 +89,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// =======================
-// 5. Rutas
-// =======================
+
 const categoriasRoutes = require('./routes/Categorias');
 const serviciosRoutes = require('./routes/servicios');
 const productosRoutes = require('./routes/Productos');
@@ -126,15 +116,15 @@ app.use('/api/categorias', categoriasRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/roles', rolesRoutes);
-app.use('/api/usuarios', usuariosRoutes);
-app.use('/api/ordenes', ordenesRoutes);
+app.use('/api/usuarios', authLimiter, usuariosRoutes);
+app.use('/api/ordenes', createLimiter, ordenesRoutes);
 app.use('/api/ordenitems', ordenItemsRoutes);
 app.use('/api/imagenes-producto', imagenProductoRoutes);
-app.use('/api/citas-servicios', citasServiciosRoutes);
+app.use('/api/citas-servicios', createLimiter, citasServiciosRoutes);
 app.use('/api/payments', paymentsRoutes);
 
 // Health check y rutas restantes...
-// (las dejas igual que tenías)
+
 
 const { testConnection } = require('./config/db');
 
@@ -171,9 +161,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Ruta no encontrada' });
 });
 
-// =======================
-// 6. Iniciar servidor
-// =======================
+
 const PORT = process.env.BACKEND_PORT || 8080;
 
 const startServer = async () => {

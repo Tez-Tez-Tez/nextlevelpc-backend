@@ -111,6 +111,16 @@ class Servicio {
         if (error) throw error;
         return data.length > 0 ? data[0] : null;
     }
+
+    static async contarPorCategoria(categoria_id) {
+        const { count, error } = await supabaseAdmin
+            .from('servicios')
+            .select('id', { count: 'exact', head: true })
+            .eq('categoria_id', categoria_id);
+
+        if (error) throw error;
+        return count;
+    }
 }
 
 module.exports = Servicio;

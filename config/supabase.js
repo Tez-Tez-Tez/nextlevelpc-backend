@@ -37,6 +37,7 @@ const testConnection = async () => {
 };
 
 // Función para ejecutar SQL directo (con parámetros)
+// ADVERTENCIA: Usar con precaución. Asegúrese de usar parámetros ($1, $2) y NO concatenar strings para evitar inyección SQL.
 const executeSQL = async (sql, params = []) => {
     try {
         // Reemplazar ? con $1, $2, etc para PostgreSQL
@@ -123,6 +124,7 @@ const executeQuery = async (table, operation = 'select', data = null, filters = 
 };
 
 // Función para obtener una conexión (compatibilidad con MySQL)
+// ADVERTENCIA: db.execute usa reemplazo manual de parámetros. NO concatenar valores de usuario en la query.
 const db = {
     execute: async (sql, params = []) => {
         try {

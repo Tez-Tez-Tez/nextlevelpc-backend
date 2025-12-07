@@ -35,7 +35,7 @@ class Productos {
             .order('nombre');
 
         if (error) throw error;
-        
+
         return data.map(p => ({
             ...p,
             categoria_nombre: p.categorias?.nombre,
@@ -193,8 +193,16 @@ class Productos {
             imagen_principal: p.imagenes_productos?.find(img => img.es_principal)?.url || p.imagenes_productos?.[0]?.url
         }));
     }
-}
 
-module.exports = Productos;
+    static async contarPorCategoria(categoria_id) {
+        const { count, error } = await supabaseAdmin
+            .from('productos')
+            .select('id', { count: 'exact', head: true })
+            .eq('categoria_id', categoria_id);
+
+        if (error) throw error;
+        return count;
+    }
+}
 
 module.exports = Productos;

@@ -8,7 +8,10 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "test": "mocha",
-    "test:unit": "mocha ./test/unitarias"
+    "test:unit": "mocha ./test/unitarias",
+    "test:blackbox": "mocha ./test/blackbox",
+    "test:integration": "mocha ./test/integration",
+    "test:all": "mocha ./test/unitarias ./test/blackbox ./test/integration"
   },
   "engines": {
     "node": "22.14.0"

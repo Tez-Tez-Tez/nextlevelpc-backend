@@ -38,7 +38,7 @@ class ServicioService {
     }
 
 
-    async createServicio(servicioData) {
+    static async createServicio(servicioData) {
         try {
             const nuevoServicioDto = new CreateServicioDto(servicioData);
             const errors = nuevoServicioDto.validate();

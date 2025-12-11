@@ -12,7 +12,7 @@
     "test:blackbox": "mocha ./test/blackbox",
     "test:functional": "mocha ./test/funcionales",
     "test:integration": "mocha ./test/integration",
-    "test:all": "mocha ./test/unitarias ./test/blackbox ./test/integration"
+    "test:all": "mocha ./test/unitarias ./test/blackbox ./test/integration ./test/funcionales"
   },
   "engines": {
     "node": "22.14.0"

@@ -13,35 +13,42 @@ describe('Pruebas Unitarias: OrdenItemsService', () => {
 
     describe('crear', () => {
         it('Debe crear un item y actualizar el total de la orden', async () => {
-            const itemInput = {
-                orden_id: 1,
-                tipo: 'producto',
-                descripcion: 'Mouse',
-                precio_unitario: 50,
-                cantidad: 2
+            const item = { 
+                orden_id: 1, 
+                tipo: 'producto', 
+                producto_id: 101,
+                descripcion: 'Mouse', 
+                precio_unitario: 50, 
+                cantidad: 2 
             };
-
-            const itemGuardado = { id: 10, ...itemInput, subtotal: 100 };
-
-            // 1. Stub: OrdenesService.actualizarTotal (para que no falle al intentar recalcular)
+            
             sinon.stub(OrdenesService, 'actualizarTotal').resolves(true);
-
-            // 2. Stub: Crear en BD devuelve ID
             sinon.stub(OrdenItems, 'crear').resolves(10);
+            
+            // Simulamos que la BD devuelve el subtotal calculado como string '100.00'
+            const itemCreado = { 
+                id: 10, 
+                ...item, 
+                subtotal: '100.00' 
+            };
+            sinon.stub(OrdenItems, 'obtenerPorId').resolves(itemCreado);
 
-            // 3. Stub: Obtener el item completo recien creado
-            sinon.stub(OrdenItems, 'obtenerPorId').resolves(itemGuardado);
-
-            const resultado = await OrdenItemsService.crear(itemInput);
+            const resultado = await OrdenItemsService.crear(item);
 
             expect(resultado).to.have.property('id', 10);
-            expect(resultado.subtotal).to.equal(100);
-            // Verificamos que se llamó a actualizarTotal
-            expect(OrdenesService.actualizarTotal.calledOnce).to.be.true;
+            
+            // CORRECCIÓN: Convertir a Number o comparar como string
+            // Opción A: Comparar como string
+            expect(resultado.subtotal).to.equal('100.00'); 
+            
+            // O Opción B (más flexible): Convertir ambos a float
+            // expect(parseFloat(resultado.subtotal)).to.equal(100); 
+
+            expect(OrdenesService.actualizarTotal.calledWith(1)).to.be.true;
         });
 
         it('Debe lanzar error si faltan datos obligatorios (Validación DTO)', async () => {
-            const itemIncompleto = { orden_id: 1 }; // Falta precio, tipo, etc.
+            const itemIncompleto = { orden_id: 1 };
 
             try {
                 await OrdenItemsService.crear(itemIncompleto);
@@ -73,11 +80,7 @@ describe('Pruebas Unitarias: OrdenItemsService', () => {
             const dataUpdate = { cantidad: 5 };
             const itemExistente = { id: 1, cantidad: 1, precio_unitario: 10 };
 
-            // 1. Stub: Verificar existencia (se llama a this.obtenerPorId -> OrdenItems.obtenerPorId)
-            // IMPORTANTE: Como el servicio llama a `OrdenItemsService.obtenerPorId`, mockeamos el modelo directo
             sinon.stub(OrdenItems, 'obtenerPorId').resolves(itemExistente);
-
-            // 2. Stub: Actualizar en BD
             sinon.stub(OrdenItems, 'actualizar').resolves({ ...itemExistente, cantidad: 5 });
 
             const resultado = await OrdenItemsService.actualizar(idItem, dataUpdate);

@@ -24,7 +24,7 @@ class CategoriaService {
         try {
             const categoria = await Categoria.findById(id);
             if (!categoria) {
-                throw new Error('Categoría no encontrada');
+                throw new Error("Categoría no encontrada");
             }
             return categoria;
         } catch (error) {
@@ -38,7 +38,7 @@ class CategoriaService {
             const errors = categoria.validate();
 
             if (errors.length > 0) {
-                throw new Error('Errores de validación: ', errors.join(', '));
+                throw new Error('Errores de validación: ' + errors.join(', '));
             }
 
             const exists = await Categoria.exists(categoria.nombre);
@@ -54,6 +54,11 @@ class CategoriaService {
 
     static async updateCategoria(id, categoriaData) {
         try {
+            // CORRECCIÓN IMPORTANTE: Validar si está vacío ANTES de hacer nada más
+            if (!categoriaData || Object.keys(categoriaData).length === 0) {
+                throw new Error('No se enviaron campos para actualizar');
+            }
+
             const categoria = await Categoria.findById(id);
             if (!categoria) {
                 throw new Error('Categoría no encontrada');
@@ -62,10 +67,12 @@ class CategoriaService {
             const data = new UpdateCategoriaDto(categoriaData);
             const errores = data.validate();
             if (errores.length > 0) {
-                throw new Error('Errores de validación: ', errores.join(', '))
+                throw new Error('Errores de validación: ' + errores.join(', '))
             }
 
-            const patch = data.toPatchObject();
+            const patch = data.toPatchObject() || {};
+            
+            // Doble verificación por seguridad
             if (Object.keys(patch).length === 0) {
                 throw new Error('No se enviaron campos para actualizar')
             }
@@ -116,7 +123,7 @@ class CategoriaService {
             }
             return categorias;
         } catch (error) {
-            throw new Error('Error al obtener categorias: ', error.message)
+            throw new Error('Error al obtener categorias: ' + error.message)
         }
     }
 

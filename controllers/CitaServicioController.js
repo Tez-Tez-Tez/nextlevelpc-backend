@@ -55,26 +55,26 @@ class CitaServicioController {
 
     static async actualizar(req,res){
         try{
-        const {id} = req.params;
-        await CitaServicioService.actualizar(req.body,id);
-        res.status(200).json({message:'Cita actualizada exitosamente'})
+            const {id} = req.params;
+            // CORREGIDO: Usar la instancia importada 'citaServicioService' (minúscula)
+            await citaServicioService.actualizar(req.body, id);
+            res.status(200).json({message:'Cita actualizada exitosamente'})
         }catch(error){
             console.error('Ocurrio un error al actualizar: ',error.message)
             res.status(500).json({message:'No se pudo actualizar la cita'})
         }
     }
 
-    static async deleteCita(id){
+    // CORREGIDO: Debe recibir (req, res), no (id)
+    static async deleteCita(req, res){
         try{
-        const {id} =req.params;
-        const cita = await citaServicioService.deleteCita(id);
-
-        res.status(201).json({message:'Cita eliminada exitosamente'})
+            const {id} = req.params;
+            await citaServicioService.deleteCita(id);
+            res.status(201).json({message:'Cita eliminada exitosamente'})
         }catch(error){
-        console.error('Error al eliminar cita: ',error.message)
-        res.status(500).json({message:'Ha ocurrido un error al intentar eliminar la cita'})
+            console.error('Error al eliminar cita: ',error.message)
+            res.status(500).json({message:'Ha ocurrido un error al intentar eliminar la cita'})
         }
-
     }
 }
 

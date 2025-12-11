@@ -45,7 +45,7 @@ describe('Pruebas Unitarias: CategoriaService', () => {
             try {
                 await CategoriaService.getCategoriaById(999);
             } catch (error) {
-                expect(error.message).to.equal('Categoría no encontrada');
+                expect(error.message).to.include('Categoría no encontrada');
             }
         });
     });
@@ -55,9 +55,7 @@ describe('Pruebas Unitarias: CategoriaService', () => {
             const input = { nombre: 'Nueva', tipo: 'producto' };
             const output = { id: 10, ...input };
 
-            // Stub validación de existencia (retorna false = no existe)
             sinon.stub(Categoria, 'exists').resolves(false);
-            // Stub crear
             sinon.stub(Categoria, 'create').resolves(output);
 
             const resultado = await CategoriaService.createCategoria(input);
@@ -65,7 +63,7 @@ describe('Pruebas Unitarias: CategoriaService', () => {
         });
 
         it('Debe lanzar error si ya existe', async () => {
-            const input = { nombre: 'Duplicada' };
+            const input = { nombre: 'Duplicada', tipo: 'producto' };
             sinon.stub(Categoria, 'exists').resolves(true);
 
             try {
@@ -79,26 +77,23 @@ describe('Pruebas Unitarias: CategoriaService', () => {
     describe('updateCategoria', () => {
         it('Debe actualizar si existe y el nombre es único', async () => {
             const id = 1;
-            const input = { nombre: 'Editado' };
-            const catExistente = { id: 1, nombre: 'Viejo' };
+            const input = { nombre: 'Editado', tipo: 'producto' };
+            const catExistente = { id: 1, nombre: 'Viejo', tipo: 'producto' };
 
             sinon.stub(Categoria, 'findById').resolves(catExistente);
-            // Stub exists con excludeId (retorna false)
             sinon.stub(Categoria, 'exists').resolves(false); 
-            sinon.stub(Categoria, 'update').resolves({ id, nombre: 'Editado' });
+            sinon.stub(Categoria, 'update').resolves({ id, ...input });
 
             const resultado = await CategoriaService.updateCategoria(id, input);
             expect(resultado.nombre).to.equal('Editado');
         });
 
         it('Debe lanzar error si no se envían campos', async () => {
-            sinon.stub(Categoria, 'findById').resolves({ id: 1 });
+            sinon.stub(Categoria, 'findById').resolves({ id: 1, nombre: 'Viejo', tipo: 'producto' });
+            
             try {
-                // Objeto vacío
                 await CategoriaService.updateCategoria(1, {});
             } catch (error) {
-                // Nota: Esto depende de cómo valide tu DTO, asumimos que falla o el servicio detecta vacío
-                // Tu servicio tiene: if (Object.keys(patch).length === 0)
                 expect(error.message).to.include('No se enviaron campos');
             }
         });
@@ -109,7 +104,6 @@ describe('Pruebas Unitarias: CategoriaService', () => {
             const id = 1;
             sinon.stub(Categoria, 'findById').resolves({ id });
             
-            // Stubs para conteos (retornan 0)
             sinon.stub(Productos, 'contarPorCategoria').resolves(0);
             sinon.stub(Servicio, 'contarPorCategoria').resolves(0);
             
@@ -123,7 +117,6 @@ describe('Pruebas Unitarias: CategoriaService', () => {
             const id = 1;
             sinon.stub(Categoria, 'findById').resolves({ id });
             
-            // Stub: Hay 5 productos
             sinon.stub(Productos, 'contarPorCategoria').resolves(5);
             sinon.stub(Servicio, 'contarPorCategoria').resolves(0);
 

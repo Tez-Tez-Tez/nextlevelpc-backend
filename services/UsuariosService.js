@@ -8,21 +8,21 @@ const { UsuarioCreateDTO, UsuarioUpdateDTO, LoginDTO } = require('../dto/Usuario
 class UsuariosService {
     static async crear(datos) {
         console.log('UsuariosService.crear - datos recibidos:', datos);
-        
+
         const dto = new UsuarioCreateDTO(datos);
         console.log('DTO creado:', dto);
-        
+
         const errores = dto.validate();
         console.log('Errores de validación:', errores);
-        
+
         if (errores.length > 0) {
             throw new Error('Errores de validación: ' + errores.join(', '));
         }
-        
+
         console.log('Verificando si correo ya existe:', dto.correo);
         const usuarioExistente = await Usuarios.obtenerPorCorreo(dto.correo);
         console.log('Resultado de búsqueda:', usuarioExistente);
-        
+
         if (usuarioExistente) {
             console.error('Usuario ya existe con ese correo');
             throw new Error('Ya existe un usuario con ese correo');
@@ -30,10 +30,10 @@ class UsuariosService {
 
         const dataModelo = dto.toModel();
         console.log('Data a insertar:', dataModelo);
-        
+
         const id = await Usuarios.crear(dataModelo);
         console.log('Usuario inserido con ID:', id);
-        
+
         return id;
     }
 
@@ -101,9 +101,9 @@ class UsuariosService {
         return await Usuarios.eliminar(id);
     }
 
-    static async obtenerRoles(){
+    static async obtenerRoles() {
         const usuarios = await Usuarios.obtenerRoles();
-        if(!usuarios){
+        if (!usuarios) {
             throw new Error('Ocurrio un errror al obtener los usuarios')
         }
         return usuarios;
@@ -115,43 +115,43 @@ class UsuariosService {
         if (errores.length > 0) {
             throw new Error('Errores de validación: ' + errores.join(', '));
         }
-        
+
         const usuario = await Usuarios.obtenerPorCorreo(dto.toLogin().correo);
         if (!usuario) {
             throw new Error('Credenciales inválidas');
         }
-        
+
         const passwordValido = await bcrypt.compare(dto.toLogin().hash_password, usuario.hash_password);
         if (!passwordValido) {
             throw new Error('Credenciales inválidas');
         }
-        
-        const payload = { 
-            id: usuario.id, 
-            correo: usuario.correo, 
+
+        const payload = {
+            id: usuario.id,
+            correo: usuario.correo,
             rol: usuario.rol_nombre // Incluir el nombre del rol
         };
-        
-        const accessToken = jwt.sign(payload, 
-            process.env.JWT_ACCESS_SECRET || 'fallback_access_key', 
-            { expiresIn: '1h' } 
+
+        const accessToken = jwt.sign(payload,
+            process.env.JWT_ACCESS_SECRET || 'fallback_access_key',
+            { expiresIn: '1h' }
         );
 
         const REFRESH_TOKEN_EXPIRATION_DAYS = 7;
-        const refreshToken = jwt.sign(payload, 
-            process.env.JWT_REFRESH_SECRET || 'fallback_refresh_key', 
-            { expiresIn: `${REFRESH_TOKEN_EXPIRATION_DAYS}d` } 
+        const refreshToken = jwt.sign(payload,
+            process.env.JWT_REFRESH_SECRET || 'fallback_refresh_key',
+            { expiresIn: `${REFRESH_TOKEN_EXPIRATION_DAYS}d` }
         );
-        
+
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + REFRESH_TOKEN_EXPIRATION_DAYS);
         const expiresAtMySQLFormat = expirationDate.toISOString().slice(0, 19).replace('T', ' ');
 
         try {
-             await Usuarios.guardarRefreshToken(usuario.id, refreshToken, expiresAtMySQLFormat);
+            await Usuarios.guardarRefreshToken(usuario.id, refreshToken, expiresAtMySQLFormat);
         } catch (dbError) {
-             console.error('Error al guardar Refresh Token en DB:', dbError);
-             throw new Error('Error de servidor al procesar sesión.');
+            console.error('Error al guardar Refresh Token en DB:', dbError);
+            throw new Error('Error de servidor al procesar sesión: ' + dbError.message);
         }
         return { accessToken, refreshToken };
     }
@@ -168,16 +168,16 @@ class UsuariosService {
                 throw new Error('Token de refresco inválido o expirado.');
             }
 
-            const payload = jwt.verify(refreshToken, 
+            const payload = jwt.verify(refreshToken,
                 process.env.JWT_REFRESH_SECRET || 'fallback_refresh_key'
             );
-            
-            const newAccessToken = jwt.sign({ 
-                id: payload.id, 
-                correo: payload.correo, 
+
+            const newAccessToken = jwt.sign({
+                id: payload.id,
+                correo: payload.correo,
                 rol: payload.rol
             }, process.env.JWT_ACCESS_SECRET || 'fallback_access_key', {
-                expiresIn: '15m' 
+                expiresIn: '15m'
             });
 
             return { newAccessToken };

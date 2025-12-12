@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]  # Cambié a solo 20.x porque 18.x está deprecated
+        node-version: [20.x]  # Solo 20.x
 
     steps:
       - uses: actions/checkout@v3
@@ -28,27 +28,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Instalar dependencias
-        run: |
-          npm install
-          # No necesitas instalar mocha/chai porque ya están en devDependencies
+        run: npm install
 
       - name: Dar permisos a mocha
         run: chmod +x node_modules/.bin/mocha
 
-      - name: Ejecutar pruebas unitarias
-        run: npx mocha test/unitarias
-
-      - name: Ejecutar pruebas blackbox
-        run: npx mocha test/blackbox
-
-      - name: Ejecutar pruebas funcionales
-        run: npx mocha test/funcionales
-
-      - name: Ejecutar pruebas de integración
-        run: npx mocha test/integration
-
-      - name: Ejecutar TODAS las pruebas
-        run: npx mocha test
+      - name: Ejecutar pruebas
+        run: npx mocha test  # Ejecuta TODOS los tests en la carpeta test/
 
   build_docker:
     needs: test

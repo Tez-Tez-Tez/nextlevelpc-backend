@@ -54,8 +54,10 @@ jobs:
       
       - name: Construir imagen Docker
         run: |
-            docker build -t ghcr.io/${{ github.repository_owner | lower }}/nextlevelpc-backend:latest .
+            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker build -t ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest .
       
       - name: Publicar imagen en GHCR
         run: |
-             docker push ghcr.io/${{ github.repository_owner | lower }}/nextlevelpc-backend:latest
+            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker push ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest

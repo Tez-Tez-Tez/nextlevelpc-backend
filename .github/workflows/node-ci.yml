@@ -36,8 +36,7 @@ jobs:
         run: chmod +x node_modules/.bin/mocha
 
       - name: Ejecutar pruebas
-        run: npx mocha
-
+        run: npm run test:all
   build_docker:
     needs: test
     runs-on: ubuntu-latest

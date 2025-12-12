@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]  # Solo 20.x
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -28,13 +28,15 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Instalar dependencias
-        run: npm install
+        run: |
+          npm install
+          npm install mocha chai --save-dev
 
       - name: Dar permisos a mocha
         run: chmod +x node_modules/.bin/mocha
 
       - name: Ejecutar pruebas
-        run: npx mocha test  # Ejecuta TODOS los tests en la carpeta test/
+        run: npm test
 
   build_docker:
     needs: test
@@ -43,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Login a GitHub Container Registry
+      - name: Creacion de contendor docker
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -52,8 +54,10 @@ jobs:
       
       - name: Construir imagen Docker
         run: |
-          docker build -t ghcr.io/${{ github.repository }}:latest .
+            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker build -t ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest .
       
       - name: Publicar imagen en GHCR
         run: |
-          docker push ghcr.io/${{ github.repository }}:latest
+            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker push ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest

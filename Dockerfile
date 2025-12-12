@@ -1,11 +1,19 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
+# Establece el directorio de trabajo
 WORKDIR /app
 
+# Copia los archivos de dependencias
 COPY package*.json ./
-RUN npm install
 
+# Instala las dependencias
+RUN npm ci --only=production
+
+# Copia el resto del código
 COPY . .
 
-EXPOSE 8080 
-CMD ["node", "index.js"]  
+# Expone el puerto (ajusta si usas otro puerto)
+EXPOSE 8080
+
+# Comando para iniciar la aplicación
+CMD ["node", "index.js"]

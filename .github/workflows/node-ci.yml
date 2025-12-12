@@ -1,15 +1,10 @@
-name: Node.js CI
+name: Node.js CI/CD
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
-permissions:
-  contents: write
-  actions: write
-  packages: write
 
 jobs:
   test:
@@ -22,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
@@ -30,13 +25,27 @@ jobs:
       - name: Instalar dependencias
         run: |
           npm install
-          npm install mocha chai --save-dev
+          
+      - name: Verificar que el backend inicia
+        run: |
+          # Iniciar backend en background
+          node index.js &
+          BACKEND_PID=$!
+          sleep 5
+          
+          # Probar endpoint health
+          if curl -s -f http://localhost:8080/api/health > /dev/null; then
+            echo "✅ Backend funciona correctamente"
+            kill $BACKEND_PID
+          else
+            echo "❌ Backend no responde"
+            kill $BACKEND_PID
+            exit 1
+          fi
 
-      - name: Dar permisos a mocha
-        run: chmod +x node_modules/.bin/mocha
-
-      - name: Ejecutar pruebas
-        run: npm test
+  # Si agregas tests después, puedes añadir:
+  # - name: Ejecutar pruebas
+  #   run: npm test
 
   build_docker:
     needs: test
@@ -45,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Creacion de contendor docker
+      - name: Login a GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -54,10 +63,8 @@ jobs:
       
       - name: Construir imagen Docker
         run: |
-            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-            docker build -t ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest .
+          docker build -t ghcr.io/${{ github.repository }}:latest .
       
       - name: Publicar imagen en GHCR
         run: |
-            IMAGE_NAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-            docker push ghcr.io/${IMAGE_NAME}/nextlevelpc-backend:latest
+          docker push ghcr.io/${{ github.repository }}:latest

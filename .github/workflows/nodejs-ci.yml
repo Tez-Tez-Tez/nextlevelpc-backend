@@ -1,0 +1,73 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+  actions: write
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]  # Cambié a solo 20.x porque 18.x está deprecated
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Instalar dependencias
+        run: |
+          npm install
+          # No necesitas instalar mocha/chai porque ya están en devDependencies
+
+      - name: Dar permisos a mocha
+        run: chmod +x node_modules/.bin/mocha
+
+      - name: Ejecutar pruebas unitarias
+        run: npx mocha test/unitarias
+
+      - name: Ejecutar pruebas blackbox
+        run: npx mocha test/blackbox
+
+      - name: Ejecutar pruebas funcionales
+        run: npx mocha test/funcionales
+
+      - name: Ejecutar pruebas de integración
+        run: npx mocha test/integration
+
+      - name: Ejecutar TODAS las pruebas
+        run: npx mocha test
+
+  build_docker:
+    needs: test
+    runs-on: ubuntu-latest
+      
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Login a GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Construir imagen Docker
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:latest .
+      
+      - name: Publicar imagen en GHCR
+        run: |
+          docker push ghcr.io/${{ github.repository }}:latest

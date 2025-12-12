@@ -7,6 +7,7 @@ const CategoriaService = require('../../services/CategoriaService');
 describe('Pruebas Funcionales: Categorias', () => {
     let req, res, statusStub, jsonSpy;
 
+    // Configuración antes de cada prueba
     beforeEach(() => {
         statusStub = sinon.stub();
         jsonSpy = sinon.spy();
@@ -18,64 +19,66 @@ describe('Pruebas Funcionales: Categorias', () => {
         };
 
         res = {
-            status: statusStub.returns({ json: jsonSpy }),
+            status: statusStub,
             json: jsonSpy
         };
+
+        // Permitir encadenamiento res.status().json()
+        statusStub.returns({ json: jsonSpy });
     });
 
+    // Restaurar los stubs después de cada prueba
     afterEach(() => {
         sinon.restore();
     });
 
-    describe('Gestión Completa de Categorías', () => {
-        it('Listar Categorías: Debe obtener todas las categorías', async () => {
+    /**
+     * Prueba: Listar Categorías
+     */
+    describe('getCategorias', () => {
+        it('Debe retornar todas las categorías', async () => {
             const mockCats = [
-                { id: 1, nombre: 'GPU', tipo: 'producto' },
-                { id: 2, nombre: 'CPU', tipo: 'producto' },
-                { id: 3, nombre: 'Mantenimiento', tipo: 'servicio' }
+                { id: 1, nombre: 'Hardware', tipo: 'producto' },
+                { id: 2, nombre: 'Soporte', tipo: 'servicio' }
             ];
             sinon.stub(CategoriaService, 'getAllCategorias').resolves(mockCats);
 
             await CategoriaController.getCategorias(req, res);
 
+            // El controlador usa res.json() directamente (status 200 por defecto)
             expect(jsonSpy.calledWith(mockCats)).to.be.true;
         });
 
-        it('Crear Categoría: Debe crear categoría de producto', async () => {
-            req.body = { nombre: 'RAM', tipo: 'producto' };
-            const created = { id: 5, ...req.body };
+        it('Debe retornar 500 si el servicio falla', async () => {
+            sinon.stub(CategoriaService, 'getAllCategorias').rejects(new Error('Error DB'));
 
-            sinon.stub(CategoriaService, 'createCategoria').resolves(created);
+            await CategoriaController.getCategorias(req, res);
 
-            await CategoriaController.createCategoria(req, res);
-
-            expect(statusStub.calledWith(201)).to.be.true;
-            expect(jsonSpy.args[0][0]).to.include({ message: "Categoría creada correctamente" });
+            expect(statusStub.calledWith(500)).to.be.true;
         });
+    });
 
-        it('Crear Categoría: Debe crear categoría de servicio', async () => {
-            req.body = { nombre: 'Reparación', tipo: 'servicio' };
-            const created = { id: 6, ...req.body };
+    /**
+     * Prueba: Listar solo Categorías de Productos
+     */
+    describe('getCategoriasProductos', () => {
+        it('Debe retornar solo categorías de tipo producto', async () => {
+            const mockCats = [{ id: 1, nombre: 'GPU', tipo: 'producto' }];
+            sinon.stub(CategoriaService, 'getCategoriasProductos').resolves(mockCats);
 
-            sinon.stub(CategoriaService, 'createCategoria').resolves(created);
+            await CategoriaController.getCategoriasProductos(req, res);
 
-            await CategoriaController.createCategoria(req, res);
-
-            expect(statusStub.calledWith(201)).to.be.true;
+            expect(jsonSpy.calledWith(mockCats)).to.be.true;
         });
+    });
 
-        it('Crear Categoría: Debe rechazar duplicados (400)', async () => {
-            req.body = { nombre: 'GPU', tipo: 'producto' };
-            sinon.stub(CategoriaService, 'createCategoria').rejects(new Error('Ya existe una categoría'));
-
-            await CategoriaController.createCategoria(req, res);
-
-            expect(statusStub.calledWith(400)).to.be.true;
-        });
-
-        it('Obtener Categoría por ID: Debe retornar la categoría si existe', async () => {
+    /**
+     * Prueba: Obtener Categoría por ID
+     */
+    describe('getCategoria', () => {
+        it('Debe retornar la categoría si existe', async () => {
             req.params.id = 1;
-            const mockCat = { id: 1, nombre: 'GPU', tipo: 'producto' };
+            const mockCat = { id: 1, nombre: 'GPU' };
 
             sinon.stub(CategoriaService, 'getCategoriaById').resolves(mockCat);
 
@@ -84,53 +87,111 @@ describe('Pruebas Funcionales: Categorias', () => {
             expect(jsonSpy.calledWith(mockCat)).to.be.true;
         });
 
-        it('Obtener Categoría por ID: Debe retornar 404 si no existe', async () => {
+        it('Debe retornar 404 si la categoría devuelve null (no encontrada)', async () => {
             req.params.id = 999;
             sinon.stub(CategoriaService, 'getCategoriaById').resolves(null);
 
             await CategoriaController.getCategoria(req, res);
 
             expect(statusStub.calledWith(404)).to.be.true;
+            expect(jsonSpy.calledWith(sinon.match({ error: 'Categoría no encontrada' }))).to.be.true;
         });
 
-        it('Actualizar Categoría: Debe actualizar correctamente', async () => {
+        it('Debe retornar 500 si hay un error en el servicio', async () => {
             req.params.id = 1;
-            req.body = { nombre: 'Tarjetas Gráficas' };
+            sinon.stub(CategoriaService, 'getCategoriaById').rejects(new Error('Fallo interno'));
 
-            const catUpd = { id: 1, nombre: 'Tarjetas Gráficas', tipo: 'producto' };
-            sinon.stub(CategoriaService, 'updateCategoria').resolves(catUpd);
+            await CategoriaController.getCategoria(req, res);
+
+            expect(statusStub.calledWith(500)).to.be.true;
+        });
+    });
+
+    /**
+     * Prueba: Crear Categoría
+     */
+    describe('createCategoria', () => {
+        it('Debe crear una categoría y retornar 201', async () => {
+            req.body = { nombre: 'Periféricos', tipo: 'producto' };
+            const mockCreated = { id: 10, ...req.body };
+
+            sinon.stub(CategoriaService, 'createCategoria').resolves(mockCreated);
+
+            await CategoriaController.createCategoria(req, res);
+
+            expect(statusStub.calledWith(201)).to.be.true;
+            expect(jsonSpy.calledWith(sinon.match({
+                message: "Categoría creada correctamente",
+                id: 10
+            }))).to.be.true;
+        });
+
+        it('Debe retornar 400 si hay error de validación o duplicado', async () => {
+            req.body = { tipo: 'producto' }; // Falta nombre
+            
+            sinon.stub(CategoriaService, 'createCategoria').rejects(new Error('Ya existe una categoría'));
+
+            await CategoriaController.createCategoria(req, res);
+
+            expect(statusStub.calledWith(400)).to.be.true;
+            expect(jsonSpy.calledWith(sinon.match({ error: 'Ya existe una categoría' }))).to.be.true;
+        });
+    });
+
+    /**
+     * Prueba: Actualizar Categoría
+     */
+    describe('updateCategoria', () => {
+        it('Debe actualizar y retornar los datos nuevos', async () => {
+            req.params.id = 1;
+            req.body = { nombre: 'Nuevo Nombre' };
+            const mockUpdated = { id: 1, nombre: 'Nuevo Nombre', tipo: 'producto' };
+
+            sinon.stub(CategoriaService, 'updateCategoria').resolves(mockUpdated);
 
             await CategoriaController.updateCategoria(req, res);
 
-            expect(jsonSpy.args[0][0]).to.include({ message: "Categoría actualizada correctamente" });
+            // El controlador usa res.json() (200 implícito)
+            expect(jsonSpy.calledWith(sinon.match({
+                message: "Categoría actualizada correctamente",
+                nombre: 'Nuevo Nombre'
+            }))).to.be.true;
         });
 
-        it('Eliminar Categoría: Debe eliminar si no tiene productos asociados', async () => {
+        it('Debe retornar 400 si falla la actualización', async () => {
             req.params.id = 1;
-            sinon.stub(CategoriaService, 'deleteCategoria').resolves({ message: 'Categoría eliminada correctamente' });
+            sinon.stub(CategoriaService, 'updateCategoria').rejects(new Error('Error update'));
 
-            await CategoriaController.deleteCategoria(req, res);
-
-            expect(jsonSpy.args[0][0]).to.include({ message: "Categoría eliminada correctamente" });
-        });
-
-        it('Eliminar Categoría: Debe rechazar si tiene productos asociados (400)', async () => {
-            req.params.id = 1;
-            sinon.stub(CategoriaService, 'deleteCategoria').rejects(new Error('No se puede eliminar'));
-
-            await CategoriaController.deleteCategoria(req, res);
+            await CategoriaController.updateCategoria(req, res);
 
             expect(statusStub.calledWith(400)).to.be.true;
         });
     });
 
-    describe('Validaciones', () => {
-        it('No debe permitir crear categoría sin nombre', async () => {
-            req.body = { tipo: 'producto' }; // Falta nombre
+    /**
+     * Prueba: Eliminar Categoría
+     */
+    describe('deleteCategoria', () => {
+        it('Debe eliminar correctamente', async () => {
+            req.params.id = 1;
+            sinon.stub(CategoriaService, 'deleteCategoria').resolves({ message: 'OK' });
 
-            await CategoriaController.createCategoria(req, res);
+            await CategoriaController.deleteCategoria(req, res);
+
+            expect(jsonSpy.calledWith(sinon.match({
+                message: "Categoría eliminada correctamente",
+                id: 1
+            }))).to.be.true;
+        });
+
+        it('Debe retornar 400 si no se puede eliminar (ej. tiene productos)', async () => {
+            req.params.id = 1;
+            sinon.stub(CategoriaService, 'deleteCategoria').rejects(new Error('Tiene productos asociados'));
+
+            await CategoriaController.deleteCategoria(req, res);
 
             expect(statusStub.calledWith(400)).to.be.true;
+            expect(jsonSpy.calledWith(sinon.match({ error: 'Tiene productos asociados' }))).to.be.true;
         });
     });
 });

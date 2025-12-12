@@ -3,16 +3,13 @@ FROM node:18-alpine
 # Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos de dependencias
-COPY package*.json ./
-
-# Instala las dependencias
-RUN npm ci --only=production
-
-# Copia el resto del código
+# Copia TODO el código (incluyendo tests)
 COPY . .
 
-# Expone el puerto (ajusta si usas otro puerto)
+# Instala TODAS las dependencias (incluyendo devDependencies para tests)
+RUN npm ci
+
+# Expone el puerto
 EXPOSE 8080
 
 # Comando para iniciar la aplicación

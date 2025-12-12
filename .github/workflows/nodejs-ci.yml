@@ -36,8 +36,7 @@ jobs:
         run: chmod +x node_modules/.bin/mocha
 
       - name: Ejecutar pruebas
-        run: npm test
-
+        run: npx mocha test/unitarias test/blackbox test/funcionales test/integration --recursive
   build_docker:
     needs: test
     runs-on: ubuntu-latest

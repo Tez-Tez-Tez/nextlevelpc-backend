@@ -57,7 +57,7 @@ class CitaServicioController {
         try{
             const {id} = req.params;
             // CORREGIDO: Usar la instancia importada 'citaServicioService' (minúscula)
-            await citaServicioService.actualizar(req.body, id);
+            await citaServicioService.actualizar(id, req.body);
             res.status(200).json({message:'Cita actualizada exitosamente'})
         }catch(error){
             console.error('Ocurrio un error al actualizar: ',error.message)
